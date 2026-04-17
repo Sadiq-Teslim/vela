@@ -1,159 +1,153 @@
-# Turborepo starter
+# vela
 
-This Turborepo starter is maintained by the Turborepo core team.
+> **get paid. on-chain.**
 
-## Using this example
+AI-powered invoicing and payment tool for Nigerian freelancers. Describe your job in plain English → Vela generates a professional invoice and contract, attaches a Solana USDC payment link, and autonomously follows up until the invoice is paid. Funds settle to your Raenest stablecoin wallet.
 
-Run the following command:
+Built for the **SuperteamNG × Raenest · Colosseum Frontier Hackathon** (April 2026).
 
-```sh
-npx create-turbo@latest
+---
+
+## How it works
+
+1. **Describe your job** — "I built a landing page for a UK client, $800, due in 14 days"
+2. **AI generates invoice + contract** — parsed via Groq (llama-3.3-70b), formatted with Vela branding
+3. **Solana payment link** — unique USDC payment URL per invoice, QR code for Phantom/Backpack
+4. **Client pays in USDC** — transaction is verified on-chain, invoice flips to PAID
+5. **Funds settle to Raenest** — USDC lands in freelancer's Raenest stablecoin wallet → USD → NGN
+6. **Agentic follow-ups** — AI drafts reminder emails (reminder / due date / overdue) and sends via Resend
+
+---
+
+## Tech stack
+
+| Layer | Tech |
+| --- | --- |
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Styling | Tailwind CSS v3 |
+| Auth + DB | Supabase (PostgreSQL + Auth + RLS + Realtime) |
+| AI | Groq SDK (`llama-3.3-70b-versatile`) |
+| Blockchain | `@solana/web3.js` + `@solana/spl-token` |
+| Payment settlement | Raenest stablecoin wallet (USDC on Solana) |
+| PDF | `@react-pdf/renderer` |
+| Email | Resend |
+| Monorepo | Turborepo + pnpm |
+
+---
+
+## Getting started
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/Sadiq-Teslim/vela.git
+cd vela
+pnpm install
 ```
 
-## What's inside?
+### 2. Supabase setup
 
-This Turborepo includes the following packages/apps:
+Create a Supabase project at [supabase.com](https://supabase.com). In the SQL Editor, run the migrations in order:
 
-### Apps and Packages
+- [`supabase/migrations/001_initial_schema.sql`](supabase/migrations/001_initial_schema.sql) — tables, RLS policies, invoice numbering
+- [`supabase/migrations/002_profile_insert_policy.sql`](supabase/migrations/002_profile_insert_policy.sql)
+- [`supabase/migrations/003_public_profile_read.sql`](supabase/migrations/003_public_profile_read.sql)
+- [`supabase/migrations/004_mark_invoice_paid_rpc.sql`](supabase/migrations/004_mark_invoice_paid_rpc.sql)
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+Then enable **Realtime** on the `invoices` table (Database → Replication).
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### 3. Environment variables
 
-### Utilities
+Copy `apps/web/.env.example` → `apps/web/.env.local` and fill in:
 
-This Turborepo has some additional tools already setup for you:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+GROQ_API_KEY=gsk_...
 
-### Build
+NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
 
-To build all apps and packages, run the following command:
+RESEND_API_KEY=re_...
+FROM_EMAIL=invoices@vela.so
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-Without global `turbo`, use your package manager:
+Get API keys:
+- **Groq** — [console.groq.com](https://console.groq.com) (free tier)
+- **Resend** — [resend.com](https://resend.com) (optional for emails)
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
+### 4. Run
+
+```bash
+pnpm dev
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+App runs at `http://localhost:3000`.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+---
 
-```sh
-turbo build --filter=docs
+## Project structure
+
+```
+vela/
+├── apps/web/                  # Next.js 16 app
+│   ├── app/
+│   │   ├── (auth)/           # Login, signup
+│   │   ├── api/              # API routes (generate, verify, PDF, email)
+│   │   ├── auth/callback/    # OAuth callback
+│   │   ├── dashboard/        # Main hub
+│   │   ├── invoice/          # New / preview / contract / detail
+│   │   ├── pay/[invoiceId]/  # Public client payment page
+│   │   └── settings/         # Profile, Raenest wallet, follow-up prefs
+│   ├── components/
+│   │   ├── layout/           # Sidebar + AppShell
+│   │   └── ui/               # Button, Badge, Card, Input, Toast, etc.
+│   ├── lib/
+│   │   ├── supabase/         # Browser + server clients, middleware
+│   │   ├── hooks/            # useAuth
+│   │   ├── groq.ts           # Groq client + JSON parser
+│   │   ├── solana.ts         # Solana Pay + tx verification
+│   │   └── pdf/              # React-PDF invoice + contract template
+│   └── types/database.ts     # Typed models
+├── supabase/migrations/      # SQL schema + policies + RPCs
+└── vela-prd.docx             # Product requirements doc
 ```
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+## Feature set (MVP)
 
-### Develop
+- [x] Email + password auth (Supabase)
+- [x] AI invoice generation (Groq llama-3.3-70b)
+- [x] AI contract generation (Nigerian law, kill fee, IP clauses)
+- [x] Editable invoice and contract previews
+- [x] Solana USDC payment link per invoice (devnet + mainnet)
+- [x] QR code for Phantom / Backpack / any Solana wallet
+- [x] On-chain transaction verification
+- [x] Manual tx signature fallback
+- [x] Auto-refresh dashboard via Supabase Realtime
+- [x] PDF invoice + contract export
+- [x] AI-drafted follow-up emails (reminder / due date / overdue)
+- [x] Email delivery via Resend
+- [x] Raenest wallet settings
+- [x] Status timeline per invoice
+- [x] Mobile responsive
 
-To develop all apps and packages, run the following command:
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## Hackathon submission
 
-```sh
-cd my-turborepo
-turbo dev
-```
+**Track:** SuperteamNG × Raenest · Colosseum Frontier Side Track
+**Deadline:** May 11, 2026
+**Prize pool:** $10,000 USDG
 
-Without global `turbo`, use your package manager:
+Vela checks every side-track requirement: Raenest settlement (USDC → USD → NGN), Solana-native payments, AI-driven workflow, and a real Nigerian freelancer persona.
 
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
+---
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## License
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+MIT
