@@ -1,5 +1,5 @@
 {
-  "name": "vela-init",
+  "name": "vela",
   "private": true,
   "scripts": {
     "build": "turbo run build",
