@@ -1,0 +1,9 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Vela icon — 48px</title>
+  <rect width="48" height="48" rx="12" fill="#0d1830"/>
+  <polygon points="24,8 38,38 10,38" fill="none" stroke="#00e5ff" stroke-width="1.8" stroke-linejoin="round"/>
+  <line x1="24" y1="8" x2="24" y2="38" stroke="#00e5ff" stroke-width="0.8" stroke-dasharray="2.5 2.5" opacity="0.35"/>
+  <circle cx="24" cy="8"  r="2.2" fill="#00e5ff"/>
+  <circle cx="10" cy="38" r="1.5" fill="#00e5ff" opacity="0.5"/>
+  <circle cx="38" cy="38" r="1.5" fill="#00e5ff" opacity="0.5"/>
+</svg>

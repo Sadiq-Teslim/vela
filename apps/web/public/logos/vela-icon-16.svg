@@ -1,0 +1,6 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Vela icon — 16px favicon</title>
+  <rect width="16" height="16" rx="4" fill="#0d1830"/>
+  <polygon points="8,2 14,13 2,13" fill="none" stroke="#00e5ff" stroke-width="1" stroke-linejoin="round"/>
+  <circle cx="8" cy="2" r="1" fill="#00e5ff"/>
+</svg>

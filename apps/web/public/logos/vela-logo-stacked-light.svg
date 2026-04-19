@@ -1,0 +1,9 @@
+<svg width="120" height="110" viewBox="0 0 120 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Vela logo — stacked light variant</title>
+  <polygon points="60,8 90,65 30,65" fill="none" stroke="#040812" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="60" y1="8" x2="60" y2="65" stroke="#040812" stroke-width="1" stroke-dasharray="3 3" opacity="0.2"/>
+  <circle cx="60" cy="8"  r="3"   fill="#040812"/>
+  <circle cx="30" cy="65" r="2"   fill="#040812" opacity="0.4"/>
+  <circle cx="90" cy="65" r="2"   fill="#040812" opacity="0.4"/>
+  <text x="60" y="98" font-family="Syne, Arial, sans-serif" font-weight="800" font-size="28" fill="#040812" text-anchor="middle" letter-spacing="-1.5">vel<tspan fill="#0097a7">a</tspan></text>
+</svg>

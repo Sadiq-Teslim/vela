@@ -1,0 +1,8 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Vela icon — 32px</title>
+  <rect width="32" height="32" rx="8" fill="#0d1830"/>
+  <polygon points="16,5 27,26 5,26" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-linejoin="round"/>
+  <circle cx="16" cy="5"  r="1.8" fill="#00e5ff"/>
+  <circle cx="5"  cy="26" r="1.2" fill="#00e5ff" opacity="0.5"/>
+  <circle cx="27" cy="26" r="1.2" fill="#00e5ff" opacity="0.5"/>
+</svg>
