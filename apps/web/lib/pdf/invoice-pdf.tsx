@@ -4,215 +4,445 @@ import {
   Text,
   View,
   StyleSheet,
+  Image,
+  Svg,
+  Polygon,
+  Line,
+  Circle,
 } from "@react-pdf/renderer";
 
-const COLORS = {
-  void: "#040812",
-  surface: "#0d1830",
-  panel: "#111e38",
-  cyan: "#00e5ff",
-  gold: "#f0b429",
-  mint: "#00d68f",
-  violet: "#7c3aed",
-  red: "#ff4d4d",
-  primary: "#f0f4ff",
-  muted: "#8899bb",
-  white: "#ffffff",
-  border: "#1e2d4d",
+/* ------------------------------------------------------------------ */
+/* Theme                                                               */
+/* ------------------------------------------------------------------ */
+
+type Theme = "light" | "dark";
+
+interface ThemeTokens {
+  bg: string;
+  surface: string;
+  panel: string;
+  border: string;
+  primary: string;
+  muted: string;
+  cyan: string;
+  gold: string;
+  mint: string;
+  violet: string;
+  watermark: string;
+}
+
+const THEMES: Record<Theme, ThemeTokens> = {
+  light: {
+    bg: "#ffffff",
+    surface: "#f8f9fb",
+    panel: "#f1f3f7",
+    border: "#e5e8ef",
+    primary: "#0d1830",
+    muted: "#6b7280",
+    cyan: "#0097a7",
+    gold: "#b8860b",
+    mint: "#059669",
+    violet: "#6d28d9",
+    watermark: "#eef1f6", // subtle gray-blue for light theme
+  },
+  dark: {
+    bg: "#040812",
+    surface: "#0d1830",
+    panel: "#111e38",
+    border: "#1e2d4d",
+    primary: "#f0f4ff",
+    muted: "#8899bb",
+    cyan: "#00e5ff",
+    gold: "#f0b429",
+    mint: "#00d68f",
+    violet: "#7c3aed",
+    watermark: "#0c1527", // subtle lift from bg for dark theme
+  },
 };
 
-const s = StyleSheet.create({
-  page: {
-    backgroundColor: COLORS.void,
-    padding: 40,
-    fontFamily: "Helvetica",
-    color: COLORS.primary,
-    fontSize: 10,
-  },
-  // Header
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 30,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  logo: {
-    fontSize: 28,
-    fontWeight: 700,
-    color: COLORS.cyan,
-    fontFamily: "Helvetica",
-  },
-  invoiceLabel: {
-    fontSize: 10,
-    color: COLORS.muted,
-    textTransform: "uppercase" as const,
-    letterSpacing: 2,
-  },
-  invoiceNumber: {
-    fontSize: 16,
-    fontWeight: 700,
-    color: COLORS.primary,
-    fontFamily: "Courier",
-    marginTop: 2,
-  },
-  // Info grid
-  infoGrid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 30,
-  },
-  infoBlock: {
-    width: "48%",
-  },
-  infoLabel: {
-    fontSize: 8,
-    color: COLORS.muted,
-    textTransform: "uppercase" as const,
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  infoValue: {
-    fontSize: 11,
-    color: COLORS.primary,
-    marginBottom: 2,
-  },
-  // Line items table
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: COLORS.surface,
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 4,
-  },
-  tableHeaderText: {
-    fontSize: 8,
-    color: COLORS.muted,
-    textTransform: "uppercase" as const,
-    letterSpacing: 1,
-    fontWeight: 700,
-  },
-  tableRow: {
-    flexDirection: "row",
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  colLabel: { width: "55%" },
-  colQty: { width: "15%", textAlign: "center" },
-  colAmount: { width: "15%", textAlign: "right" },
-  colTotal: { width: "15%", textAlign: "right" },
-  // Total
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 16,
-    paddingTop: 12,
-    borderTopWidth: 2,
-    borderTopColor: COLORS.cyan,
-  },
-  totalLabel: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: COLORS.muted,
-    marginRight: 20,
-  },
-  totalValue: {
-    fontSize: 18,
-    fontWeight: 700,
-    color: COLORS.cyan,
-    fontFamily: "Courier",
-  },
-  // Payment
-  paymentBox: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 8,
-    padding: 16,
-    marginTop: 24,
-  },
-  paymentTitle: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: COLORS.cyan,
-    marginBottom: 8,
-    textTransform: "uppercase" as const,
-    letterSpacing: 1,
-  },
-  paymentUrl: {
-    fontSize: 9,
-    color: COLORS.primary,
-    fontFamily: "Courier",
-  },
-  // Footer
-  footer: {
-    position: "absolute",
-    bottom: 30,
-    left: 40,
-    right: 40,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 10,
-  },
-  footerText: {
-    fontSize: 8,
-    color: COLORS.muted,
-  },
-  // Contract page
-  contractTitle: {
-    fontSize: 20,
-    fontWeight: 700,
-    color: COLORS.primary,
-    marginBottom: 4,
-  },
-  contractSubtitle: {
-    fontSize: 10,
-    color: COLORS.muted,
-    marginBottom: 24,
-  },
-  sectionCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 6,
-    padding: 14,
-    marginBottom: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.violet,
-  },
-  sectionLabel: {
-    fontSize: 8,
-    color: COLORS.violet,
-    textTransform: "uppercase" as const,
-    letterSpacing: 1.5,
-    marginBottom: 6,
-    fontWeight: 700,
-  },
-  sectionText: {
-    fontSize: 10,
-    color: COLORS.primary,
-    lineHeight: 1.5,
-  },
-  signatureArea: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 30,
-  },
-  signatureBlock: {
-    width: "45%",
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 8,
-  },
-  signatureLabel: {
-    fontSize: 8,
-    color: COLORS.muted,
-    textTransform: "uppercase" as const,
-    letterSpacing: 1,
-  },
-});
+/* ------------------------------------------------------------------ */
+/* Logo components                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Small Vela mark used in the header. SVG viewBox 0 0 48 58.
+ * Matches public/logos/vela-mark-bare.svg but rendered via react-pdf.
+ */
+function VelaMark({ size = 22, color }: { size?: number; color: string }) {
+  const h = Math.round(size * (58 / 48));
+  return (
+    <Svg width={size} height={h} viewBox="0 0 48 58">
+      <Polygon
+        points="24,2 44,44 4,44"
+        fill="none"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Line
+        x1={24}
+        y1={2}
+        x2={24}
+        y2={44}
+        stroke={color}
+        strokeWidth={1}
+        strokeDasharray="3 3"
+        opacity={0.35}
+      />
+      <Circle cx={24} cy={2} r={3} fill={color} />
+      <Circle cx={4} cy={44} r={2} fill={color} opacity={0.5} />
+      <Circle cx={44} cy={44} r={2} fill={color} opacity={0.5} />
+    </Svg>
+  );
+}
+
+/**
+ * Large background watermark version of the mark.
+ * Positioned absolutely, low opacity, theme-aware color.
+ */
+function VelaWatermark({ color }: { color: string }) {
+  // Viewport is A4 (~595 x 842 at 72dpi in react-pdf). We use viewBox
+  // so the shape scales to container.
+  return (
+    <Svg width={520} height={630} viewBox="0 0 48 58">
+      <Polygon
+        points="24,2 44,44 4,44"
+        fill="none"
+        stroke={color}
+        strokeWidth={0.6}
+        strokeLinejoin="round"
+      />
+      <Line
+        x1={24}
+        y1={2}
+        x2={24}
+        y2={44}
+        stroke={color}
+        strokeWidth={0.3}
+        strokeDasharray="1.5 1.5"
+      />
+      <Circle cx={24} cy={2} r={1.2} fill={color} />
+      <Circle cx={4} cy={44} r={0.9} fill={color} />
+      <Circle cx={44} cy={44} r={0.9} fill={color} />
+    </Svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Styles (theme-aware)                                                */
+/* ------------------------------------------------------------------ */
+
+const buildStyles = (t: ThemeTokens) =>
+  StyleSheet.create({
+    page: {
+      backgroundColor: t.bg,
+      padding: 48,
+      fontFamily: "Helvetica",
+      color: t.primary,
+      fontSize: 10,
+    },
+    // Watermark wrapper (large Vela mark bg)
+    watermarkWrap: {
+      position: "absolute",
+      top: 100,
+      left: 40,
+      right: 0,
+      alignItems: "center",
+      justifyContent: "center",
+      opacity: 1,
+    },
+
+    /* Header */
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: 28,
+      paddingBottom: 18,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+    },
+    brand: { flexDirection: "row", alignItems: "center", gap: 8 },
+    logoText: {
+      fontSize: 22,
+      fontFamily: "Helvetica-Bold",
+      color: t.primary,
+      letterSpacing: -1,
+    },
+    invoiceLabel: {
+      fontSize: 8,
+      color: t.muted,
+      textTransform: "uppercase" as const,
+      letterSpacing: 2,
+      marginBottom: 3,
+    },
+    invoiceNumber: {
+      fontSize: 20,
+      fontFamily: "Helvetica-Bold",
+      color: t.primary,
+      letterSpacing: -0.5,
+    },
+
+    /* Info blocks */
+    infoRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 26,
+      gap: 16,
+    },
+    infoBlock: { flex: 1 },
+    infoLabel: {
+      fontSize: 7.5,
+      color: t.muted,
+      textTransform: "uppercase" as const,
+      letterSpacing: 1.3,
+      marginBottom: 6,
+      fontFamily: "Helvetica-Bold",
+    },
+    infoValue: {
+      fontSize: 11,
+      color: t.primary,
+      marginBottom: 2,
+    },
+    infoValueMuted: {
+      fontSize: 9,
+      color: t.muted,
+    },
+
+    /* Table */
+    tableHeader: {
+      flexDirection: "row",
+      backgroundColor: t.surface,
+      paddingVertical: 9,
+      paddingHorizontal: 12,
+      borderRadius: 4,
+      marginBottom: 2,
+    },
+    tableHeaderText: {
+      fontSize: 7.5,
+      color: t.muted,
+      textTransform: "uppercase" as const,
+      letterSpacing: 1.2,
+      fontFamily: "Helvetica-Bold",
+    },
+    tableRow: {
+      flexDirection: "row",
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+    },
+    colLabel: { width: "55%", fontSize: 10.5, color: t.primary },
+    colQty: {
+      width: "15%",
+      textAlign: "center",
+      fontSize: 10,
+      color: t.muted,
+    },
+    colAmount: {
+      width: "15%",
+      textAlign: "right",
+      fontSize: 10,
+      fontFamily: "Courier",
+      color: t.primary,
+    },
+    colTotal: {
+      width: "15%",
+      textAlign: "right",
+      fontSize: 10,
+      fontFamily: "Courier-Bold",
+      color: t.primary,
+    },
+
+    /* Total summary */
+    totalBlock: {
+      marginTop: 18,
+      alignSelf: "flex-end",
+      width: "45%",
+    },
+    totalRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingVertical: 5,
+    },
+    totalLabel: { fontSize: 10, color: t.muted },
+    totalValue: {
+      fontSize: 10,
+      fontFamily: "Courier",
+      color: t.primary,
+    },
+    grandTotalRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 10,
+      paddingTop: 12,
+      borderTopWidth: 2,
+      borderTopColor: t.cyan,
+    },
+    grandTotalLabel: {
+      fontSize: 13,
+      fontFamily: "Helvetica-Bold",
+      color: t.primary,
+    },
+    grandTotalValue: {
+      fontSize: 18,
+      fontFamily: "Courier-Bold",
+      color: t.cyan,
+    },
+
+    /* Payment section */
+    paymentBox: {
+      backgroundColor: t.surface,
+      borderRadius: 8,
+      padding: 16,
+      marginTop: 26,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 16,
+    },
+    paymentQR: {
+      width: 92,
+      height: 92,
+      padding: 6,
+      backgroundColor: "#ffffff",
+      borderRadius: 4,
+    },
+    paymentInfo: { flex: 1 },
+    paymentTitle: {
+      fontSize: 9,
+      fontFamily: "Helvetica-Bold",
+      color: t.cyan,
+      textTransform: "uppercase" as const,
+      letterSpacing: 1.3,
+      marginBottom: 6,
+    },
+    paymentHeading: {
+      fontSize: 13,
+      fontFamily: "Helvetica-Bold",
+      color: t.primary,
+      marginBottom: 4,
+    },
+    paymentDesc: {
+      fontSize: 9,
+      color: t.muted,
+      marginBottom: 6,
+      lineHeight: 1.4,
+    },
+    paymentUrl: {
+      fontSize: 7.5,
+      color: t.cyan,
+      fontFamily: "Courier",
+    },
+
+    /* Notes */
+    thankYou: {
+      marginTop: 26,
+      fontSize: 10,
+      color: t.muted,
+      fontStyle: "italic",
+    },
+
+    /* Footer */
+    footer: {
+      position: "absolute",
+      bottom: 32,
+      left: 48,
+      right: 48,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+      paddingTop: 10,
+    },
+    footerBrand: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+    },
+    footerLogo: {
+      width: 8,
+      height: 8,
+      borderRadius: 1,
+      backgroundColor: t.cyan,
+    },
+    footerText: { fontSize: 8, color: t.muted, fontFamily: "Helvetica-Bold" },
+    footerTag: { fontSize: 8, color: t.muted },
+    footerPage: { fontSize: 8, color: t.muted, fontFamily: "Courier" },
+
+    /* Contract page */
+    contractIntro: {
+      fontSize: 10,
+      color: t.muted,
+      lineHeight: 1.5,
+      marginBottom: 22,
+    },
+    contractTitle: {
+      fontSize: 22,
+      fontFamily: "Helvetica-Bold",
+      color: t.primary,
+      marginBottom: 6,
+      letterSpacing: -0.5,
+    },
+    contractSubtitle: {
+      fontSize: 10,
+      color: t.muted,
+      marginBottom: 20,
+    },
+    sectionCard: {
+      backgroundColor: t.surface,
+      borderRadius: 6,
+      padding: 14,
+      marginBottom: 10,
+      borderLeftWidth: 3,
+      borderLeftColor: t.violet,
+    },
+    sectionLabel: {
+      fontSize: 7.5,
+      color: t.violet,
+      textTransform: "uppercase" as const,
+      letterSpacing: 1.3,
+      marginBottom: 5,
+      fontFamily: "Helvetica-Bold",
+    },
+    sectionText: {
+      fontSize: 10,
+      color: t.primary,
+      lineHeight: 1.5,
+    },
+    signatureArea: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 36,
+      gap: 30,
+    },
+    signatureBlock: {
+      flex: 1,
+      paddingTop: 32,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+    },
+    signatureLabel: {
+      fontSize: 7.5,
+      color: t.muted,
+      textTransform: "uppercase" as const,
+      letterSpacing: 1.3,
+      marginBottom: 4,
+      fontFamily: "Helvetica-Bold",
+    },
+    signatureName: {
+      fontSize: 11,
+      color: t.primary,
+      fontFamily: "Helvetica-Bold",
+    },
+  });
+
+/* ------------------------------------------------------------------ */
+/* Props + component                                                   */
+/* ------------------------------------------------------------------ */
 
 interface InvoicePDFProps {
+  theme?: Theme;
   invoice: {
     number: string;
     client_name: string;
@@ -238,121 +468,217 @@ interface InvoicePDFProps {
     confidentiality: string;
   } | null;
   paymentUrl: string;
+  /** Pre-generated QR code data URL for the Solana Pay link. */
+  qrDataUrl?: string;
+}
+
+function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function fmtMoney(n: number): string {
+  return n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 export function InvoicePDF({
+  theme = "light",
   invoice,
   freelancer,
   contract,
   paymentUrl,
+  qrDataUrl,
 }: InvoicePDFProps) {
+  const t = THEMES[theme];
+  const s = buildStyles(t);
+
+  const subtotal = invoice.line_items.reduce(
+    (sum, item) => sum + item.amount * item.qty,
+    0
+  );
+
   return (
-    <Document>
-      {/* Page 1: Invoice */}
+    <Document
+      title={`Invoice ${invoice.number}`}
+      author={freelancer.business_name || freelancer.name}
+    >
+      {/* ============================================================ */}
+      {/* Page 1 — Invoice                                              */}
+      {/* ============================================================ */}
       <Page size="A4" style={s.page}>
+        <View style={s.watermarkWrap} fixed>
+          <VelaWatermark color={t.watermark} />
+        </View>
+
+        {/* Header */}
         <View style={s.header}>
-          <Text style={s.logo}>vela</Text>
+          <View style={s.brand}>
+            <VelaMark size={22} color={t.cyan} />
+            <Text style={s.logoText}>vela</Text>
+          </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={s.invoiceLabel}>Invoice</Text>
             <Text style={s.invoiceNumber}>{invoice.number}</Text>
           </View>
         </View>
 
-        <View style={s.infoGrid}>
+        {/* From / Bill to */}
+        <View style={s.infoRow}>
           <View style={s.infoBlock}>
             <Text style={s.infoLabel}>From</Text>
             <Text style={s.infoValue}>
               {freelancer.business_name || freelancer.name}
             </Text>
-            <Text style={{ ...s.infoValue, color: COLORS.muted, fontSize: 9 }}>
-              {freelancer.email}
-            </Text>
+            {freelancer.business_name && (
+              <Text style={s.infoValueMuted}>{freelancer.name}</Text>
+            )}
+            <Text style={s.infoValueMuted}>{freelancer.email}</Text>
           </View>
           <View style={s.infoBlock}>
             <Text style={s.infoLabel}>Bill To</Text>
             <Text style={s.infoValue}>{invoice.client_name}</Text>
-            <Text style={{ ...s.infoValue, color: COLORS.muted, fontSize: 9 }}>
-              {invoice.client_email}
-            </Text>
+            <Text style={s.infoValueMuted}>{invoice.client_email}</Text>
           </View>
         </View>
 
-        <View style={s.infoGrid}>
+        {/* Dates */}
+        <View style={s.infoRow}>
           <View style={s.infoBlock}>
             <Text style={s.infoLabel}>Issue Date</Text>
-            <Text style={s.infoValue}>
-              {new Date(invoice.created_at).toLocaleDateString()}
-            </Text>
+            <Text style={s.infoValue}>{fmtDate(invoice.created_at)}</Text>
           </View>
           <View style={s.infoBlock}>
             <Text style={s.infoLabel}>Due Date</Text>
-            <Text style={{ ...s.infoValue, color: COLORS.gold }}>
-              {new Date(invoice.due_date).toLocaleDateString()}
+            <Text style={{ ...s.infoValue, color: t.gold }}>
+              {fmtDate(invoice.due_date)}
+            </Text>
+          </View>
+          <View style={s.infoBlock}>
+            <Text style={s.infoLabel}>Currency</Text>
+            <Text style={{ ...s.infoValue, color: t.cyan }}>
+              {invoice.currency}
             </Text>
           </View>
         </View>
 
         {/* Table */}
         <View style={s.tableHeader}>
-          <Text style={{ ...s.tableHeaderText, ...s.colLabel }}>
+          <Text style={{ ...s.tableHeaderText, width: "55%" }}>
             Description
           </Text>
-          <Text style={{ ...s.tableHeaderText, ...s.colQty }}>Qty</Text>
-          <Text style={{ ...s.tableHeaderText, ...s.colAmount }}>Rate</Text>
-          <Text style={{ ...s.tableHeaderText, ...s.colTotal }}>Amount</Text>
+          <Text
+            style={{ ...s.tableHeaderText, width: "15%", textAlign: "center" }}
+          >
+            Qty
+          </Text>
+          <Text
+            style={{ ...s.tableHeaderText, width: "15%", textAlign: "right" }}
+          >
+            Rate
+          </Text>
+          <Text
+            style={{ ...s.tableHeaderText, width: "15%", textAlign: "right" }}
+          >
+            Amount
+          </Text>
         </View>
 
         {invoice.line_items.map((item, i) => (
           <View key={i} style={s.tableRow}>
             <Text style={s.colLabel}>{item.label}</Text>
-            <Text style={{ ...s.colQty, color: COLORS.muted }}>{item.qty}</Text>
-            <Text style={{ ...s.colAmount, fontFamily: "Courier" }}>
-              ${item.amount.toLocaleString()}
-            </Text>
-            <Text style={{ ...s.colTotal, fontFamily: "Courier" }}>
-              ${(item.amount * item.qty).toLocaleString()}
-            </Text>
+            <Text style={s.colQty}>{item.qty}</Text>
+            <Text style={s.colAmount}>${fmtMoney(item.amount)}</Text>
+            <Text style={s.colTotal}>${fmtMoney(item.amount * item.qty)}</Text>
           </View>
         ))}
 
-        <View style={s.totalRow}>
-          <Text style={s.totalLabel}>Total</Text>
-          <Text style={s.totalValue}>
-            ${invoice.total.toLocaleString()} {invoice.currency}
-          </Text>
+        {/* Totals */}
+        <View style={s.totalBlock}>
+          <View style={s.totalRow}>
+            <Text style={s.totalLabel}>Subtotal</Text>
+            <Text style={s.totalValue}>${fmtMoney(subtotal)}</Text>
+          </View>
+          <View style={s.grandTotalRow}>
+            <Text style={s.grandTotalLabel}>Total Due</Text>
+            <Text style={s.grandTotalValue}>
+              ${fmtMoney(invoice.total)} {invoice.currency}
+            </Text>
+          </View>
         </View>
 
+        {/* Payment box with QR */}
         <View style={s.paymentBox}>
-          <Text style={s.paymentTitle}>Payment</Text>
-          <Text style={{ fontSize: 9, color: COLORS.muted, marginBottom: 6 }}>
-            Pay with USDC on Solana via the link below:
-          </Text>
-          <Text style={s.paymentUrl}>{paymentUrl}</Text>
+          {qrDataUrl && (
+            <Image src={qrDataUrl} style={s.paymentQR} />
+          )}
+          <View style={s.paymentInfo}>
+            <Text style={s.paymentTitle}>Pay with {invoice.currency}</Text>
+            <Text style={s.paymentHeading}>Solana Pay</Text>
+            <Text style={s.paymentDesc}>
+              Scan the QR code with Phantom, Backpack, or any Solana wallet.
+              Or visit the link below to pay on any device.
+            </Text>
+            <Text style={s.paymentUrl}>{paymentUrl}</Text>
+          </View>
         </View>
 
-        <View style={s.footer}>
-          <Text style={s.footerText}>
-            vela — get paid. on-chain.
-          </Text>
-          <Text style={s.footerText}>Page 1</Text>
+        <Text style={s.thankYou}>
+          Thank you for your business — it&apos;s a pleasure working with you.
+        </Text>
+
+        {/* Footer */}
+        <View style={s.footer} fixed>
+          <View style={s.footerBrand}>
+            <VelaMark size={10} color={t.cyan} />
+            <Text style={s.footerText}>vela</Text>
+            <Text style={s.footerTag}>— get paid. on-chain.</Text>
+          </View>
+          <Text
+            style={s.footerPage}
+            render={({ pageNumber, totalPages }) =>
+              `${pageNumber} / ${totalPages}`
+            }
+          />
         </View>
       </Page>
 
-      {/* Page 2+: Contract (if exists) */}
+      {/* ============================================================ */}
+      {/* Page 2 — Contract (optional)                                  */}
+      {/* ============================================================ */}
       {contract && (
         <Page size="A4" style={s.page}>
+          <View style={s.watermarkWrap} fixed>
+            <VelaWatermark color={t.watermark} />
+          </View>
+
           <View style={s.header}>
-            <Text style={s.logo}>vela</Text>
+            <View style={s.brand}>
+              <VelaMark size={22} color={t.cyan} />
+              <Text style={s.logoText}>vela</Text>
+            </View>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={s.invoiceLabel}>Contract</Text>
+              <Text style={s.invoiceLabel}>Agreement for</Text>
               <Text style={s.invoiceNumber}>{invoice.number}</Text>
             </View>
           </View>
 
           <Text style={s.contractTitle}>Freelance Service Agreement</Text>
           <Text style={s.contractSubtitle}>
-            Between {freelancer.business_name || freelancer.name} and{" "}
-            {invoice.client_name}
+            Between{" "}
+            <Text style={{ color: t.primary, fontFamily: "Helvetica-Bold" }}>
+              {freelancer.business_name || freelancer.name}
+            </Text>{" "}
+            (the Freelancer) and{" "}
+            <Text style={{ color: t.primary, fontFamily: "Helvetica-Bold" }}>
+              {invoice.client_name}
+            </Text>{" "}
+            (the Client), executed on {fmtDate(invoice.created_at)}.
           </Text>
 
           {[
@@ -375,23 +701,28 @@ export function InvoicePDF({
           <View style={s.signatureArea}>
             <View style={s.signatureBlock}>
               <Text style={s.signatureLabel}>Freelancer</Text>
-              <Text style={{ ...s.infoValue, marginTop: 4 }}>
+              <Text style={s.signatureName}>
                 {freelancer.business_name || freelancer.name}
               </Text>
             </View>
             <View style={s.signatureBlock}>
               <Text style={s.signatureLabel}>Client</Text>
-              <Text style={{ ...s.infoValue, marginTop: 4 }}>
-                {invoice.client_name}
-              </Text>
+              <Text style={s.signatureName}>{invoice.client_name}</Text>
             </View>
           </View>
 
-          <View style={s.footer}>
-            <Text style={s.footerText}>
-              vela — get paid. on-chain.
-            </Text>
-            <Text style={s.footerText}>Page 2</Text>
+          <View style={s.footer} fixed>
+            <View style={s.footerBrand}>
+              <VelaMark size={10} color={t.cyan} />
+              <Text style={s.footerText}>vela</Text>
+              <Text style={s.footerTag}>— get paid. on-chain.</Text>
+            </View>
+            <Text
+              style={s.footerPage}
+              render={({ pageNumber, totalPages }) =>
+                `${pageNumber} / ${totalPages}`
+              }
+            />
           </View>
         </Page>
       )}

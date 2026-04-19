@@ -3,12 +3,15 @@ export type InvoiceStatus = "DRAFT" | "SENT" | "PENDING" | "PAID" | "OVERDUE";
 export type FollowUpType = "reminder_before" | "due_date" | "overdue";
 
 // Application-level types (used in components, not Supabase generics)
+export type PdfTheme = "light" | "dark";
+
 export interface Profile {
   id: string;
   email: string;
   name: string;
   business_name: string | null;
   raenest_wallet: string | null;
+  pdf_theme: PdfTheme;
   created_at: string;
 }
 

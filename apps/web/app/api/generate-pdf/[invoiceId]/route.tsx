@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
+import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/server";
 import { InvoicePDF } from "@/lib/pdf/invoice-pdf";
+import { generateSolanaPayUrl } from "@/lib/solana";
+import type { PdfTheme } from "@/types/database";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ invoiceId: string }> }
 ) {
   try {
     const { invoiceId } = await params;
+    const url = new URL(request.url);
+    // Allow overriding theme per-request via ?theme=dark or ?theme=light
+    const themeOverride = url.searchParams.get("theme") as PdfTheme | null;
+
     const supabase = await createClient();
 
-    // Fetch invoice
     const { data: invoice, error: invErr } = await supabase
       .from("invoices")
       .select("*")
@@ -22,14 +28,12 @@ export async function GET(
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
-    // Fetch freelancer profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("name, business_name, email")
+      .select("name, business_name, email, raenest_wallet, pdf_theme")
       .eq("id", invoice.user_id)
       .single();
 
-    // Fetch contract if exists
     const { data: contractRow } = await supabase
       .from("contracts")
       .select("content")
@@ -39,8 +43,35 @@ export async function GET(
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const paymentUrl = `${appUrl}/pay/${invoiceId}`;
 
+    // Prefer Solana Pay URL in the QR if wallet is configured — native wallets
+    // will auto-open. Otherwise fall back to the hosted payment page URL.
+    const qrTarget = profile?.raenest_wallet
+      ? generateSolanaPayUrl(
+          profile.raenest_wallet,
+          invoice.total,
+          invoice.number,
+          (invoice.currency as "USDC" | "USDT") || "USDC"
+        )
+      : paymentUrl;
+
+    const qrDataUrl = await QRCode.toDataURL(qrTarget, {
+      width: 256,
+      margin: 1,
+      color: {
+        dark: "#040812",
+        light: "#ffffff",
+      },
+      errorCorrectionLevel: "M",
+    });
+
+    const theme: PdfTheme =
+      themeOverride === "dark" || themeOverride === "light"
+        ? themeOverride
+        : (profile?.pdf_theme as PdfTheme) || "light";
+
     const buffer = await renderToBuffer(
       <InvoicePDF
+        theme={theme}
         invoice={invoice}
         freelancer={{
           name: profile?.name || "Freelancer",
@@ -49,6 +80,7 @@ export async function GET(
         }}
         contract={contractRow?.content || null}
         paymentUrl={paymentUrl}
+        qrDataUrl={qrDataUrl}
       />
     );
 
