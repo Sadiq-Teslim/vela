@@ -53,6 +53,7 @@ Create a Supabase project at [supabase.com](https://supabase.com). In the SQL Ed
 - [`supabase/migrations/002_profile_insert_policy.sql`](supabase/migrations/002_profile_insert_policy.sql)
 - [`supabase/migrations/003_public_profile_read.sql`](supabase/migrations/003_public_profile_read.sql)
 - [`supabase/migrations/004_mark_invoice_paid_rpc.sql`](supabase/migrations/004_mark_invoice_paid_rpc.sql)
+- [`supabase/migrations/005_pdf_theme.sql`](supabase/migrations/005_pdf_theme.sql)
 
 Then enable **Realtime** on the `invoices` table (Database → Replication).
 
@@ -135,6 +136,64 @@ vela/
 - [x] Raenest wallet settings
 - [x] Status timeline per invoice
 - [x] Mobile responsive
+
+---
+
+## Deployment (Vercel)
+
+The `apps/web` folder deploys as a standalone Next.js app. Vercel auto-detects
+Turborepo and handles the monorepo build.
+
+### 1. Import the repo
+
+1. Log in to [vercel.com](https://vercel.com) → **Add New** → **Project**
+2. Select the `Sadiq-Teslim/vela` repo
+3. Set **Root Directory** → `apps/web`
+4. Framework Preset → **Next.js** (auto-detected)
+5. Build Command → leave as default (`next build`)
+6. Install Command → `pnpm install --frozen-lockfile=false`
+
+### 2. Environment variables
+
+Add these in Vercel's **Settings → Environment Variables** for all environments
+(Production, Preview, Development):
+
+| Variable | Value | Notes |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://<project>.supabase.co` | From Supabase dashboard |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ...` | Supabase **anon** public key |
+| `GROQ_API_KEY` | `gsk_...` | From [console.groq.com](https://console.groq.com) |
+| `NEXT_PUBLIC_SOLANA_RPC_URL` | `https://api.mainnet-beta.solana.com` | Use **mainnet** in production |
+| `NEXT_PUBLIC_SOLANA_NETWORK` | `mainnet` | |
+| `NEXT_PUBLIC_APP_URL` | `https://vela.so` | **Production URL** — used in payment links + emails |
+| `RESEND_API_KEY` | `re_...` | Optional — only needed for outbound email |
+| `FROM_EMAIL` | `invoices@vela.so` | Must be a verified Resend sender domain |
+
+> ⚠️ **NEXT_PUBLIC_APP_URL must be the production URL** — it's embedded in
+> client-facing payment links and email CTAs. If left as `localhost:3000`,
+> clients get broken links.
+
+### 3. Supabase production checklist
+
+Before going live:
+
+- [ ] Run all 5 migrations from `supabase/migrations/` in order
+- [ ] Enable **Realtime** on the `invoices` table (Database → Replication)
+- [ ] Set **Site URL** in Supabase → Authentication → URL Configuration to your Vercel URL
+- [ ] Add your Vercel URL to **Redirect URLs** (for OAuth/email callbacks)
+- [ ] Turn on email confirmations in Auth settings (or off for demo)
+
+### 4. Resend domain (optional)
+
+If using email follow-ups:
+
+1. Add your domain at [resend.com/domains](https://resend.com/domains)
+2. Add the DNS records they provide
+3. Once verified, set `FROM_EMAIL` to a sender on that domain
+
+### 5. Deploy
+
+Every push to `main` auto-deploys. Push directly or open a PR for preview deploys.
 
 ---
 
