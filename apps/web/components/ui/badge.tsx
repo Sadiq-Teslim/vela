@@ -6,7 +6,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   overdue: "bg-vela-red/10 text-vela-red",
   "on-chain": "bg-vela-cyan/10 text-vela-cyan",
   "ai-draft": "bg-vela-violet/15 text-violet-400",
-  draft: "bg-white/5 text-vela-muted",
+  draft: "bg-vela-panel text-vela-muted",
 };
 
 const variantLabels: Record<BadgeVariant, string> = {

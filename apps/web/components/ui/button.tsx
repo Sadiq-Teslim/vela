@@ -8,7 +8,7 @@ const variantStyles: Record<Variant, string> = {
   secondary:
     "border border-vela-cyan/30 text-vela-cyan font-display font-bold px-6 py-3 rounded-[10px] text-sm hover:bg-vela-cyan/10",
   ghost:
-    "text-vela-muted font-display font-bold px-6 py-3 rounded-[10px] text-sm hover:bg-white/5",
+    "text-vela-muted font-display font-bold px-6 py-3 rounded-[10px] text-sm hover:bg-vela-panel",
   danger:
     "bg-vela-red/10 text-vela-red font-display font-bold px-6 py-3 rounded-[10px] text-sm hover:bg-vela-red/20",
 };

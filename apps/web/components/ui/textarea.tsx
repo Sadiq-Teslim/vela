@@ -16,7 +16,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
         <textarea
           ref={ref}
-          className={`bg-vela-panel border border-white/10 rounded-[10px] px-4 py-3 text-vela-primary font-body text-sm placeholder:text-vela-muted/50 focus:outline-none focus:border-vela-cyan/50 focus:ring-1 focus:ring-vela-cyan/20 transition resize-none ${error ? "border-vela-red/50" : ""} ${className}`}
+          className={`bg-vela-panel border border-vela-border rounded-[10px] px-4 py-3 text-vela-primary font-body text-sm placeholder:text-vela-muted/50 focus:outline-none focus:border-vela-cyan/50 focus:ring-1 focus:ring-vela-cyan/20 transition resize-none ${error ? "border-vela-red/50" : ""} ${className}`}
           {...props}
         />
         {error && (

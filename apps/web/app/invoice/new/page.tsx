@@ -61,7 +61,7 @@ export default function NewInvoicePage() {
         </p>
 
         <form onSubmit={handleGenerate}>
-          <div className="bg-vela-surface border border-white/10 rounded-2xl p-6">
+          <div className="bg-vela-surface border border-vela-border rounded-2xl p-6">
             <Textarea
               placeholder='e.g. "I built a landing page for a UK client, $800, due in 14 days. Client email: john@acme.com"'
               value={jobDescription}

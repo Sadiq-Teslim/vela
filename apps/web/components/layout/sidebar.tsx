@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/theme";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: "grid" },
@@ -38,7 +39,7 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-[220px] h-screen fixed left-0 top-0 bg-vela-surface border-r border-white/5 py-6 px-4 z-40">
+      <aside className="hidden md:flex flex-col w-[220px] h-screen fixed left-0 top-0 bg-vela-surface border-r border-vela-border py-6 px-4 z-40">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2.5 mb-10 px-2">
           <div className="w-8 h-8 rounded-lg bg-vela-cyan/20 flex items-center justify-center">
@@ -60,7 +61,7 @@ export function Sidebar() {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition ${
                   active
                     ? "bg-vela-cyan/10 text-vela-cyan"
-                    : "text-vela-muted hover:text-vela-primary hover:bg-white/5"
+                    : "text-vela-muted hover:text-vela-primary hover:bg-vela-panel"
                 }`}
               >
                 {ICONS[item.icon]}
@@ -71,15 +72,18 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="px-2 pt-4 border-t border-white/5">
-          <p className="text-vela-muted text-[10px] font-mono">
-            vela v1.0 — on-chain
-          </p>
+        <div className="px-2 pt-4 border-t border-vela-border space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-vela-muted text-[10px] font-mono">
+              vela v1.0
+            </p>
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 
       {/* Mobile bottom bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-vela-surface border-t border-white/10 flex justify-around py-3 px-4 z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-vela-surface border-t border-vela-border flex justify-around py-3 px-4 z-40">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
           return (

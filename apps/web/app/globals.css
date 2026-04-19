@@ -3,8 +3,59 @@
 @tailwind utilities;
 
 /* ============================================
-   Vela — Dark-first design system
+   Vela — Theme palettes
+   Light is default, `.dark` on <html> inverts.
    ============================================ */
+
+:root {
+  /* LIGHT theme */
+  --vela-void: #ffffff;
+  --vela-surface: #f8f9fb;
+  --vela-panel: #eef1f6;
+  --vela-border: rgba(15, 23, 42, 0.08);
+  --vela-cyan: #0097a7;
+  --vela-gold: #b8860b;
+  --vela-mint: #059669;
+  --vela-violet: #6d28d9;
+  --vela-red: #dc2626;
+  --vela-primary: #0d1830;
+  --vela-muted: rgba(15, 23, 42, 0.55);
+
+  /* Gradient / overlay tokens (used by hero/parallax bg) */
+  --vela-grid-line: rgba(13, 24, 48, 0.05);
+  --vela-orb-cyan: rgba(0, 151, 167, 0.18);
+  --vela-orb-violet: rgba(109, 40, 217, 0.12);
+  --vela-orb-mint: rgba(5, 150, 105, 0.1);
+
+  color-scheme: light;
+}
+
+.dark {
+  /* DARK theme */
+  --vela-void: #040812;
+  --vela-surface: #0d1830;
+  --vela-panel: #111e38;
+  --vela-border: rgba(255, 255, 255, 0.08);
+  --vela-cyan: #00e5ff;
+  --vela-gold: #f0b429;
+  --vela-mint: #00d68f;
+  --vela-violet: #7c3aed;
+  --vela-red: #ff4d4d;
+  --vela-primary: #f0f4ff;
+  --vela-muted: rgba(200, 215, 255, 0.5);
+
+  --vela-grid-line: rgba(0, 229, 255, 0.06);
+  --vela-orb-cyan: rgba(0, 229, 255, 0.2);
+  --vela-orb-violet: rgba(124, 58, 237, 0.15);
+  --vela-orb-mint: rgba(0, 214, 143, 0.1);
+
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
 
 html,
 body {
@@ -13,11 +64,14 @@ body {
 }
 
 body {
-  color: #f0f4ff;
-  background: #040812;
+  color: var(--vela-primary);
+  background: var(--vela-void);
   font-family: var(--font-body), "Outfit", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
 * {
@@ -36,17 +90,20 @@ a {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #040812;
+  background: var(--vela-void);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--vela-border);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--vela-muted);
 }
 
-/* Animations */
+/* ============================================
+   Animations
+   ============================================ */
+
 @keyframes slide-in {
   from {
     opacity: 0;
@@ -57,7 +114,68 @@ a {
     transform: translateX(0);
   }
 }
-
 .animate-slide-in {
   animation: slide-in 0.2s ease-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 5s ease infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 40px rgba(0, 229, 255, 0.35); }
+  50% { box-shadow: 0 0 60px rgba(0, 229, 255, 0.55); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+/* Light-mode-specific pulse (teal) */
+:root:not(.dark) .animate-pulse-glow {
+  animation-name: pulse-glow-light;
+}
+@keyframes pulse-glow-light {
+  0%, 100% { box-shadow: 0 0 30px rgba(0, 151, 167, 0.2); }
+  50% { box-shadow: 0 0 45px rgba(0, 151, 167, 0.35); }
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.animate-blink {
+  animation: blink 1s infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

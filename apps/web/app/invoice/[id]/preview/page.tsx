@@ -215,7 +215,7 @@ export default function InvoicePreviewPage() {
           </div>
 
           {/* Line items */}
-          <div className="border-t border-white/10 pt-4">
+          <div className="border-t border-vela-border pt-4">
             <p className="text-vela-muted text-xs font-mono uppercase tracking-wider mb-3">
               Line Items
             </p>
@@ -228,14 +228,14 @@ export default function InvoicePreviewPage() {
                   {editing ? (
                     <>
                       <input
-                        className="flex-1 bg-transparent text-vela-primary font-body text-sm border-b border-white/10 focus:border-vela-cyan/50 outline-none pb-1"
+                        className="flex-1 bg-transparent text-vela-primary font-body text-sm border-b border-vela-border focus:border-vela-cyan/50 outline-none pb-1"
                         value={item.label}
                         onChange={(e) =>
                           updateLineItem(i, "label", e.target.value)
                         }
                       />
                       <input
-                        className="w-16 bg-transparent text-vela-primary font-mono text-sm text-right border-b border-white/10 focus:border-vela-cyan/50 outline-none pb-1"
+                        className="w-16 bg-transparent text-vela-primary font-mono text-sm text-right border-b border-vela-border focus:border-vela-cyan/50 outline-none pb-1"
                         type="number"
                         value={item.qty}
                         onChange={(e) =>
@@ -244,7 +244,7 @@ export default function InvoicePreviewPage() {
                       />
                       <span className="text-vela-muted text-xs">x</span>
                       <input
-                        className="w-24 bg-transparent text-vela-primary font-mono text-sm text-right border-b border-white/10 focus:border-vela-cyan/50 outline-none pb-1"
+                        className="w-24 bg-transparent text-vela-primary font-mono text-sm text-right border-b border-vela-border focus:border-vela-cyan/50 outline-none pb-1"
                         type="number"
                         value={item.amount}
                         onChange={(e) =>
@@ -271,7 +271,7 @@ export default function InvoicePreviewPage() {
           </div>
 
           {/* Total */}
-          <div className="border-t border-white/10 mt-4 pt-4 flex justify-between items-center">
+          <div className="border-t border-vela-border mt-4 pt-4 flex justify-between items-center">
             <p className="text-vela-muted font-display font-bold text-sm">
               Total
             </p>

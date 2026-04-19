@@ -217,7 +217,7 @@ export default function DashboardPage() {
           <>
             {/* Desktop table */}
             <Card className="p-0 overflow-hidden hidden md:block">
-              <div className="grid grid-cols-[1fr_1.2fr_0.8fr_0.8fr_0.7fr_1fr] gap-4 px-6 py-3 border-b border-white/5 text-vela-muted text-xs font-mono uppercase tracking-wider">
+              <div className="grid grid-cols-[1fr_1.2fr_0.8fr_0.8fr_0.7fr_1fr] gap-4 px-6 py-3 border-b border-vela-border text-vela-muted text-xs font-mono uppercase tracking-wider">
                 <span>Invoice #</span>
                 <span>Client</span>
                 <span>Amount</span>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
               {filtered.map((invoice) => (
                 <div
                   key={invoice.id}
-                  className="grid grid-cols-[1fr_1.2fr_0.8fr_0.8fr_0.7fr_1fr] gap-4 px-6 py-4 border-b border-white/5 hover:bg-white/[0.02] transition items-center cursor-pointer"
+                  className="grid grid-cols-[1fr_1.2fr_0.8fr_0.8fr_0.7fr_1fr] gap-4 px-6 py-4 border-b border-vela-border hover:bg-vela-panel/50 transition items-center cursor-pointer"
                   onClick={() => router.push(`/invoice/${invoice.id}/detail`)}
                 >
                   <span className="text-vela-primary font-mono text-sm">
@@ -248,13 +248,13 @@ export default function DashboardPage() {
                   <div className="flex gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => copyPaymentLink(invoice.id)}
-                      className="text-vela-muted hover:text-vela-cyan text-xs font-mono px-2 py-1 rounded hover:bg-white/5 transition"
+                      className="text-vela-muted hover:text-vela-cyan text-xs font-mono px-2 py-1 rounded hover:bg-vela-panel transition"
                     >
                       Link
                     </button>
                     <button
                       onClick={() => window.open(`/api/generate-pdf/${invoice.id}`, "_blank")}
-                      className="text-vela-muted hover:text-vela-cyan text-xs font-mono px-2 py-1 rounded hover:bg-white/5 transition"
+                      className="text-vela-muted hover:text-vela-cyan text-xs font-mono px-2 py-1 rounded hover:bg-vela-panel transition"
                     >
                       PDF
                     </button>

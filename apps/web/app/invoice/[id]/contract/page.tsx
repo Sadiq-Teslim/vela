@@ -189,7 +189,7 @@ function ContractSection({
       {editing ? (
         <div onClick={(e) => e.stopPropagation()}>
           <textarea
-            className="w-full bg-vela-panel border border-white/10 rounded-lg px-3 py-2 text-vela-primary font-body text-sm focus:outline-none focus:border-vela-violet/50 resize-none"
+            className="w-full bg-vela-panel border border-vela-border rounded-lg px-3 py-2 text-vela-primary font-body text-sm focus:outline-none focus:border-vela-violet/50 resize-none"
             rows={3}
             value={text}
             onChange={(e) => setText(e.target.value)}

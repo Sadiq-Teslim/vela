@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Syne, Outfit, DM_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/ui/toast";
+import { ThemeProvider, themeInitScript } from "@/components/theme";
 import "./globals.css";
 
 const syne = Syne({
@@ -33,11 +34,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Set theme class before first paint to prevent FOUC */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         className={`${syne.variable} ${outfit.variable} ${dmMono.variable} font-body`}
       >
-        <ToastProvider>{children}</ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
