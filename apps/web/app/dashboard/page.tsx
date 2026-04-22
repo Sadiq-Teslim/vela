@@ -49,6 +49,8 @@ export default function DashboardPage() {
     const supabase = createClient();
 
     async function fetchInvoices() {
+      if (!user) return;
+      
       const { data } = await supabase
         .from("invoices")
         .select("*")
