@@ -21,7 +21,10 @@ interface Invoice {
   created_at: string;
 }
 
-const STATUS_BADGE: Record<InvoiceStatus, "paid" | "pending" | "overdue" | "on-chain" | "ai-draft" | "draft"> = {
+const STATUS_BADGE: Record<
+  InvoiceStatus,
+  "paid" | "pending" | "overdue" | "on-chain" | "ai-draft" | "draft"
+> = {
   DRAFT: "draft",
   SENT: "pending",
   PENDING: "pending",
@@ -72,7 +75,7 @@ export default function DashboardPage() {
         },
         () => {
           fetchInvoices();
-        }
+        },
       )
       .subscribe();
 
@@ -196,7 +199,9 @@ export default function DashboardPage() {
           <Card className="flex items-center justify-center py-12">
             <div className="flex items-center gap-3">
               <div className="w-4 h-4 border-2 border-vela-cyan border-t-transparent rounded-full animate-spin" />
-              <p className="text-vela-muted font-mono text-sm">Loading invoices...</p>
+              <p className="text-vela-muted font-mono text-sm">
+                Loading invoices...
+              </p>
             </div>
           </Card>
         ) : invoices.length === 0 ? (
@@ -246,7 +251,10 @@ export default function DashboardPage() {
                     {new Date(invoice.due_date).toLocaleDateString()}
                   </span>
                   <Badge variant={STATUS_BADGE[invoice.status]} />
-                  <div className="flex gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="flex gap-1 justify-end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button
                       onClick={() => copyPaymentLink(invoice.id)}
                       className="text-vela-muted hover:text-vela-cyan text-xs font-mono px-2 py-1 rounded hover:bg-vela-panel transition"
@@ -254,7 +262,9 @@ export default function DashboardPage() {
                       Link
                     </button>
                     <button
-                      onClick={() => window.open(`/api/generate-pdf/${invoice.id}`, "_blank")}
+                      onClick={() =>
+                        window.open(`/api/generate-pdf/${invoice.id}`, "_blank")
+                      }
                       className="text-vela-muted hover:text-vela-cyan text-xs font-mono px-2 py-1 rounded hover:bg-vela-panel transition"
                     >
                       PDF
@@ -265,7 +275,9 @@ export default function DashboardPage() {
 
               {filtered.length === 0 && (
                 <div className="px-6 py-8 text-center">
-                  <p className="text-vela-muted text-sm">No invoices match your filters</p>
+                  <p className="text-vela-muted text-sm">
+                    No invoices match your filters
+                  </p>
                 </div>
               )}
             </Card>
@@ -279,10 +291,14 @@ export default function DashboardPage() {
                   onClick={() => router.push(`/invoice/${invoice.id}/detail`)}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-vela-primary font-mono text-sm">{invoice.number}</span>
+                    <span className="text-vela-primary font-mono text-sm">
+                      {invoice.number}
+                    </span>
                     <Badge variant={STATUS_BADGE[invoice.status]} />
                   </div>
-                  <p className="text-vela-primary font-body text-sm mb-1">{invoice.client_name}</p>
+                  <p className="text-vela-primary font-body text-sm mb-1">
+                    {invoice.client_name}
+                  </p>
                   <div className="flex items-center justify-between">
                     <span className="text-vela-cyan font-mono text-lg font-medium">
                       ${invoice.total.toLocaleString()}
@@ -295,7 +311,9 @@ export default function DashboardPage() {
               ))}
 
               {filtered.length === 0 && (
-                <p className="text-vela-muted text-sm text-center py-4">No invoices match your filters</p>
+                <p className="text-vela-muted text-sm text-center py-4">
+                  No invoices match your filters
+                </p>
               )}
             </div>
           </>

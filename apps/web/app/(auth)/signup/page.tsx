@@ -57,7 +57,9 @@ export default function SignupPage() {
     if (error) {
       const msg = error.message.toLowerCase();
       if (msg.includes("already registered") || msg.includes("user already")) {
-        setFormError("An account with this email already exists. Sign in instead.");
+        setFormError(
+          "An account with this email already exists. Sign in instead.",
+        );
       } else if (msg.includes("rate limit")) {
         setFormError("Too many attempts. Please try again in a minute.");
       } else {
@@ -112,7 +114,11 @@ export default function SignupPage() {
           <motion.div
             initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            transition={{
+              duration: 0.7,
+              delay: 0.15,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             className="relative"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-vela-mint/15 via-transparent to-vela-cyan/10 blur-2xl opacity-60 pointer-events-none" />
@@ -125,7 +131,11 @@ export default function SignupPage() {
                 Start getting paid on-chain
               </p>
 
-              <form onSubmit={handleSignup} noValidate className="flex flex-col gap-4">
+              <form
+                onSubmit={handleSignup}
+                noValidate
+                className="flex flex-col gap-4"
+              >
                 <Input
                   label="Full Name"
                   type="text"

@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <style>
+      body {
+        font-family: sans-serif;
+        color: #0d1830;
+        margin: 0;
+        padding: 20px;
+      }
+      .main {
+        max-width: 500px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+      }
+      h1 {
+        font-size: 24px;
+        margin: 0 0 20px 0;
+      }
+      p {
+        font-size: 15px;
+        line-height: 1.6;
+        margin: 0 0 15px 0;
+      }
+      a {
+        color: #0097a7;
+        text-decoration: none;
+      }
+      .cta {
+        display: block;
+        text-align: center;
+        background: #0097a7;
+        color: white;
+        padding: 12px 30px;
+        margin: 25px 0;
+        text-decoration: none;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+      <h1>Welcome to Vela</h1>
+
+      <p>Hi there,</p>
+
+      <p>Click the link below to activate your account:</p>
+
+      <a href="{{ .ConfirmationURL }}" class="cta">Activate Account</a>
+
+      <p>Or copy this link: {{ .ConfirmationURL }}</p>
+
+      <p>Vela helps you get paid on-chain.</p>
+
+      <p>© 2026 Vela</p>
+    </div>
+  </body>
+</html>
