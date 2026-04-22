@@ -49,6 +49,7 @@ export default function DashboardPage() {
       const { data } = await supabase
         .from("invoices")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (data) setInvoices(data as Invoice[]);
