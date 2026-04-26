@@ -33,7 +33,10 @@ interface FollowUp {
 
 const STATUS_STEPS: InvoiceStatus[] = ["DRAFT", "SENT", "PENDING", "PAID"];
 
-const STATUS_BADGE: Record<InvoiceStatus, "paid" | "pending" | "overdue" | "on-chain" | "ai-draft" | "draft"> = {
+const STATUS_BADGE: Record<
+  InvoiceStatus,
+  "paid" | "pending" | "overdue" | "on-chain" | "ai-draft" | "draft"
+> = {
   DRAFT: "draft",
   SENT: "pending",
   PENDING: "pending",
@@ -90,7 +93,11 @@ export default function InvoiceDetailPage() {
       });
       if (res.ok) {
         toast("Invoice resent to client", "success");
-        setInvoice((prev) => prev ? { ...prev, status: "SENT", sent_at: new Date().toISOString() } : prev);
+        setInvoice((prev) =>
+          prev
+            ? { ...prev, status: "SENT", sent_at: new Date().toISOString() }
+            : prev,
+        );
       }
     } catch {
       toast("Failed to resend invoice", "error");
@@ -161,11 +168,15 @@ export default function InvoiceDetailPage() {
               <Badge variant={STATUS_BADGE[invoice.status]} />
             </div>
             <p className="text-vela-muted text-sm">
-              {invoice.client_name} &middot; ${invoice.total.toLocaleString()} {invoice.currency}
+              {invoice.client_name} &middot; ${invoice.total.toLocaleString()}{" "}
+              {invoice.currency}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="ghost" onClick={() => window.open(`/api/generate-pdf/${id}`, "_blank")}>
+            <Button
+              variant="ghost"
+              onClick={() => window.open(`/api/generate-pdf/${id}`, "_blank")}
+            >
               Download PDF
             </Button>
             <Button variant="secondary" onClick={copyPaymentLink}>
@@ -196,8 +207,8 @@ export default function InvoiceDetailPage() {
                         isCurrent
                           ? "bg-vela-cyan text-vela-void ring-2 ring-vela-cyan/30"
                           : reached
-                          ? "bg-vela-mint/20 text-vela-mint"
-                          : "bg-vela-panel text-vela-muted"
+                            ? "bg-vela-mint/20 text-vela-mint"
+                            : "bg-vela-panel text-vela-muted"
                       }`}
                     >
                       {reached && !isCurrent ? "✓" : i + 1}
@@ -224,17 +235,32 @@ export default function InvoiceDetailPage() {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <StatCard label="Amount" value={`$${invoice.total.toLocaleString()}`} sub={invoice.currency} accent="cyan" />
+          <StatCard
+            label="Amount"
+            value={`$${invoice.total.toLocaleString()}`}
+            sub={invoice.currency}
+            accent="cyan"
+          />
           <StatCard
             label="Due Date"
             value={new Date(invoice.due_date).toLocaleDateString()}
-            sub={isOverdue ? "OVERDUE" : invoice.status === "PAID" ? "Paid" : "Pending"}
+            sub={
+              isOverdue
+                ? "OVERDUE"
+                : invoice.status === "PAID"
+                  ? "Paid"
+                  : "Pending"
+            }
             accent={isOverdue ? "gold" : "mint"}
           />
           <StatCard
             label="Created"
             value={new Date(invoice.created_at).toLocaleDateString()}
-            sub={invoice.sent_at ? `Sent ${new Date(invoice.sent_at).toLocaleDateString()}` : "Not sent"}
+            sub={
+              invoice.sent_at
+                ? `Sent ${new Date(invoice.sent_at).toLocaleDateString()}`
+                : "Not sent"
+            }
             accent="violet"
           />
         </div>
@@ -247,8 +273,13 @@ export default function InvoiceDetailPage() {
             </p>
             <div className="space-y-2">
               {invoice.line_items.map((item, i) => (
-                <div key={i} className="flex justify-between items-center bg-vela-panel rounded-lg p-3">
-                  <span className="text-vela-primary font-body text-sm">{item.label}</span>
+                <div
+                  key={i}
+                  className="flex justify-between items-center bg-vela-panel rounded-lg p-3"
+                >
+                  <span className="text-vela-primary font-body text-sm">
+                    {item.label}
+                  </span>
                   <span className="text-vela-primary font-mono text-sm">
                     {item.qty} x ${item.amount.toLocaleString()}
                   </span>
@@ -264,16 +295,24 @@ export default function InvoiceDetailPage() {
             <div className="space-y-3">
               <div>
                 <p className="text-vela-muted text-xs font-mono">Name</p>
-                <p className="text-vela-primary font-body">{invoice.client_name}</p>
+                <p className="text-vela-primary font-body">
+                  {invoice.client_name}
+                </p>
               </div>
               <div>
                 <p className="text-vela-muted text-xs font-mono">Email</p>
-                <p className="text-vela-primary font-body">{invoice.client_email || "N/A"}</p>
+                <p className="text-vela-primary font-body">
+                  {invoice.client_email || "N/A"}
+                </p>
               </div>
               {invoice.payment_tx_hash && (
                 <div>
-                  <p className="text-vela-muted text-xs font-mono">Transaction</p>
-                  <p className="text-vela-cyan font-mono text-xs break-all">{invoice.payment_tx_hash}</p>
+                  <p className="text-vela-muted text-xs font-mono">
+                    Transaction
+                  </p>
+                  <p className="text-vela-cyan font-mono text-xs break-all">
+                    {invoice.payment_tx_hash}
+                  </p>
                 </div>
               )}
             </div>
@@ -315,7 +354,10 @@ export default function InvoiceDetailPage() {
           ) : (
             <div className="space-y-2">
               {followUps.map((fu) => (
-                <div key={fu.id} className="flex items-center justify-between bg-vela-panel rounded-lg p-3">
+                <div
+                  key={fu.id}
+                  className="flex items-center justify-between bg-vela-panel rounded-lg p-3"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-vela-violet" />
                     <span className="text-vela-primary font-body text-sm">
@@ -343,11 +385,17 @@ export default function InvoiceDetailPage() {
 
         <div className="flex gap-3 mt-6">
           {invoice.status !== "PAID" && (
-            <Button variant="ghost" onClick={() => router.push(`/invoice/${id}/preview`)}>
+            <Button
+              variant="ghost"
+              onClick={() => router.push(`/invoice/${id}/preview`)}
+            >
               Edit Unpaid Invoice
             </Button>
           )}
-          <Button variant="ghost" onClick={() => router.push(`/invoice/${id}/contract`)}>
+          <Button
+            variant="ghost"
+            onClick={() => router.push(`/invoice/${id}/contract`)}
+          >
             View Contract
           </Button>
         </div>

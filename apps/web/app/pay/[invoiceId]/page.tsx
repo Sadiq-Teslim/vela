@@ -35,7 +35,9 @@ export default function PaymentPage() {
   const [copied, setCopied] = useState<string | null>(null);
   const [txInput, setTxInput] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [autoVerifying, setAutoVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState("");
+  const [lastAutoCheck, setLastAutoCheck] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchInvoice() {
@@ -83,7 +85,7 @@ export default function PaymentPage() {
             if (merged.status === "PAID") setPaid(true);
             return merged;
           });
-        }
+        },
       )
       .subscribe();
 
@@ -100,12 +102,16 @@ export default function PaymentPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from("invoices")
-        .select("id, number, client_name, client_email, total, currency, due_date, status, user_id, line_items")
+        .select(
+          "id, number, client_name, client_email, total, currency, due_date, status, user_id, line_items",
+        )
         .eq("id", invoiceId)
         .single();
 
       if (data) {
-        setInvoice((prev) => (prev ? ({ ...prev, ...(data as Partial<Invoice>) } as Invoice) : prev));
+        setInvoice((prev) =>
+          prev ? ({ ...prev, ...(data as Partial<Invoice>) } as Invoice) : prev,
+        );
         if (data.status === "PAID") {
           setPaid(true);
           clearInterval(interval);
@@ -136,6 +142,90 @@ export default function PaymentPage() {
     const mint = USDC_MINT[network] || USDC_MINT.devnet;
     return `solana:${wallet}?amount=${invoice.total}&spl-token=${mint}&label=Vela-${invoice.number}&message=Payment%20for%20invoice%20${invoice.number}`;
   }, [wallet, invoice]);
+
+  const phantomDeepLink = useMemo(() => {
+    if (!wallet || !invoice) return "";
+    const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK || "devnet";
+    const mint = USDC_MINT[network] || USDC_MINT.devnet;
+    return `https://phantom.app/ul/v1/transfer?recipient=${encodeURIComponent(wallet)}&amount=${encodeURIComponent(String(invoice.total))}&splToken=${encodeURIComponent(mint)}&label=${encodeURIComponent(`Vela-${invoice.number}`)}&message=${encodeURIComponent(`Payment for invoice ${invoice.number}`)}`;
+  }, [wallet, invoice]);
+
+  function launchWallet() {
+    if (!solanaPayUrl) return;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const target = isMobile && phantomDeepLink ? phantomDeepLink : solanaPayUrl;
+
+    sessionStorage.setItem(`vela:wallet-launched:${invoiceId}`, "1");
+    window.location.href = target;
+  }
+
+  async function autoDetectPayment() {
+    if (paid || autoVerifying || verifying) return;
+    setAutoVerifying(true);
+    try {
+      const res = await fetch(`/api/verify-payment/${invoiceId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.verified || data.status === "PAID") {
+        setPaid(true);
+      }
+      setLastAutoCheck(new Date().toISOString());
+    } catch {
+      // Keep silent here; manual verify and polling are still available.
+    }
+    setAutoVerifying(false);
+  }
+
+  // Try launching wallet automatically once per session for this invoice.
+  useEffect(() => {
+    if (!solanaPayUrl || paid) return;
+    const key = `vela:wallet-launched:${invoiceId}`;
+    if (sessionStorage.getItem(key)) return;
+
+    const t = setTimeout(() => {
+      launchWallet();
+      setTimeout(() => {
+        autoDetectPayment();
+      }, 8000);
+    }, 700);
+
+    return () => clearTimeout(t);
+  }, [solanaPayUrl, paid, invoiceId]);
+
+  // Detect payment after users return from wallet app / extension.
+  useEffect(() => {
+    if (paid) return;
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        autoDetectPayment();
+      }
+    };
+
+    const onFocus = () => {
+      autoDetectPayment();
+    };
+
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [paid, invoiceId, autoVerifying, verifying]);
+
+  // Background auto-check while payment is pending.
+  useEffect(() => {
+    if (paid) return;
+    const interval = setInterval(() => {
+      autoDetectPayment();
+    }, 12000);
+    return () => clearInterval(interval);
+  }, [paid, invoiceId, autoVerifying, verifying]);
 
   function copyToClipboard(text: string, label: string) {
     navigator.clipboard.writeText(text);
@@ -256,9 +346,7 @@ export default function PaymentPage() {
   /* --------------------------------------------------------------- */
 
   const freelancerName =
-    invoice.profiles?.business_name ||
-    invoice.profiles?.name ||
-    "Freelancer";
+    invoice.profiles?.business_name || invoice.profiles?.name || "Freelancer";
 
   return (
     <div className="min-h-screen bg-[#f8f9fb]">
@@ -287,7 +375,9 @@ export default function PaymentPage() {
           transition={{ duration: 0.5 }}
         >
           {/* Intro */}
-          <p className="text-sm text-gray-500 mb-1">You have received an invoice from</p>
+          <p className="text-sm text-gray-500 mb-1">
+            You have received an invoice from
+          </p>
           <h1 className="font-display font-bold text-2xl sm:text-3xl text-gray-900 mb-8">
             {freelancerName}
           </h1>
@@ -416,6 +506,15 @@ export default function PaymentPage() {
 
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
+                    onClick={launchWallet}
+                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-display font-bold px-4 py-2.5 rounded-lg text-sm transition shadow-sm"
+                  >
+                    Open Wallet & Pay
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
                     onClick={() => copyToClipboard(wallet, "address")}
                     className="flex-1 border border-gray-200 hover:border-gray-300 text-gray-900 font-display font-bold px-4 py-2.5 rounded-lg text-sm transition"
                   >
@@ -428,6 +527,14 @@ export default function PaymentPage() {
                     {copied === "url" ? "✓ Copied!" : "Copy Pay URL"}
                   </button>
                 </div>
+
+                <p className="text-[11px] text-gray-500 font-mono">
+                  {autoVerifying
+                    ? "Checking blockchain for your payment..."
+                    : lastAutoCheck
+                      ? `Auto-check active. Last check: ${new Date(lastAutoCheck).toLocaleTimeString()}`
+                      : "Auto-check active. We will detect payment after wallet confirmation."}
+                </p>
 
                 {/* Manual verification */}
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-4">

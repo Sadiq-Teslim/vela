@@ -92,7 +92,12 @@ export default function InvoicePreviewPage() {
     if (field === "label") {
       items[index] = { label: value, amount: current.amount, qty: current.qty };
     } else {
-      items[index] = { label: current.label, amount: current.amount, qty: current.qty, [field]: parseFloat(value) || 0 };
+      items[index] = {
+        label: current.label,
+        amount: current.amount,
+        qty: current.qty,
+        [field]: parseFloat(value) || 0,
+      };
     }
     const total = items.reduce((sum, item) => sum + item.amount * item.qty, 0);
     setInvoice({ ...invoice, line_items: items, total });
@@ -103,7 +108,9 @@ export default function InvoicePreviewPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex items-center gap-3">
           <div className="w-4 h-4 border-2 border-vela-cyan border-t-transparent rounded-full animate-spin" />
-          <p className="text-vela-muted font-mono text-sm">Loading invoice...</p>
+          <p className="text-vela-muted font-mono text-sm">
+            Loading invoice...
+          </p>
         </div>
       </div>
     );
@@ -307,10 +314,7 @@ export default function InvoicePreviewPage() {
           >
             Download PDF
           </Button>
-          <Button
-            variant="secondary"
-            onClick={() => router.push("/dashboard")}
-          >
+          <Button variant="secondary" onClick={() => router.push("/dashboard")}>
             Save as Draft
           </Button>
           <Button onClick={handleGenerateContract} loading={generating}>
