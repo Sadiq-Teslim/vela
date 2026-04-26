@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import { getGroq, AI_MODEL, parseAIJson } from "@/lib/groq";
 import { createClient } from "@/lib/supabase/server";
 
+type ParsedInvoice = {
+  clientName: string;
+  clientEmail: string | null;
+  lineItems: { label: string; amount: number; qty: number }[];
+  total: number;
+  currency: "USDC" | "USDT";
+  dueDate: string;
+  paymentTerms: string;
+  notes: string | null;
+};
+
 function buildSystemPrompt() {
   const today = new Date();
   const todayISO = today.toISOString().slice(0, 10);
@@ -28,6 +39,56 @@ Rules:
 - Never include markdown, explanation, or extra text — return ONLY the JSON object.`;
 }
 
+function buildFallbackInvoice(jobDescription: string): ParsedInvoice {
+  const text = jobDescription.trim();
+  const lower = text.toLowerCase();
+
+  const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+
+  const clientMatch = text.match(
+    /(?:client\s*[:\-]?|for\s+)([A-Za-z][A-Za-z\s'.-]{1,60})/i
+  );
+  const rawClientName = clientMatch?.[1]?.trim() ?? "Client";
+  const clientName = rawClientName.replace(/[.,;:!?]$/, "");
+
+  const usdAmountMatch = text.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
+  const genericAmountMatch = text.match(
+    /(?:amount|total|price|budget)\s*[:=\-]?\s*(\d+(?:\.\d{1,2})?)/i
+  );
+  const firstNumberMatch = text.match(/\b(\d+(?:\.\d{1,2})?)\b/);
+  const parsedAmount = Number(
+    usdAmountMatch?.[1] ?? genericAmountMatch?.[1] ?? firstNumberMatch?.[1] ?? 0
+  );
+  const amount = Number.isFinite(parsedAmount) && parsedAmount > 0 ? parsedAmount : 0;
+
+  const currency: "USDC" | "USDT" = lower.includes("usdt") ? "USDT" : "USDC";
+
+  const daysMatch = text.match(/(\d{1,3})\s*(day|days|week|weeks)/i);
+  const unit = daysMatch?.[2]?.toLowerCase();
+  const rawDays = Number(daysMatch?.[1] ?? 14);
+  const days = unit?.startsWith("week") ? rawDays * 7 : rawDays;
+  const dueDate = new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+
+  const label = text.split(/[.!?\n]/)[0]?.trim().slice(0, 100) || "Freelance services";
+
+  return {
+    clientName,
+    clientEmail: emailMatch?.[0] ?? null,
+    lineItems: [
+      {
+        label,
+        amount,
+        qty: 1,
+      },
+    ],
+    total: amount,
+    currency,
+    dueDate,
+    paymentTerms: `Net ${days}`,
+    notes: null,
+  };
+}
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -48,37 +109,35 @@ export async function POST(request: Request) {
       );
     }
 
-    // Call Groq to parse the job description
-    const completion = await getGroq().chat.completions.create({
-      model: AI_MODEL,
-      messages: [
-        { role: "system", content: buildSystemPrompt() },
-        { role: "user", content: jobDescription },
-      ],
-      temperature: 0.1,
-      max_tokens: 1024,
-      response_format: { type: "json_object" },
-    });
+    let parsed: ParsedInvoice;
 
-    const aiResponse = completion.choices[0]?.message?.content;
-    if (!aiResponse) {
-      return NextResponse.json(
-        { error: "AI failed to generate response" },
-        { status: 500 }
-      );
+    if (!process.env.GROQ_API_KEY) {
+      console.error("GROQ_API_KEY is missing. Falling back to deterministic parser.");
+      parsed = buildFallbackInvoice(jobDescription);
+    } else {
+      try {
+        const completion = await getGroq().chat.completions.create({
+          model: AI_MODEL,
+          messages: [
+            { role: "system", content: buildSystemPrompt() },
+            { role: "user", content: jobDescription },
+          ],
+          temperature: 0.1,
+          max_tokens: 1024,
+          response_format: { type: "json_object" },
+        });
+
+        const aiResponse = completion.choices[0]?.message?.content;
+        if (!aiResponse) {
+          throw new Error("AI returned empty content");
+        }
+
+        parsed = parseAIJson<ParsedInvoice>(aiResponse);
+      } catch (aiError) {
+        console.error("AI parse/generation error. Falling back:", aiError);
+        parsed = buildFallbackInvoice(jobDescription);
+      }
     }
-
-    // Parse the AI response (strips markdown code fences if present)
-    const parsed = parseAIJson<{
-      clientName: string;
-      clientEmail: string | null;
-      lineItems: { label: string; amount: number; qty: number }[];
-      total: number;
-      currency: "USDC" | "USDT";
-      dueDate: string;
-      paymentTerms: string;
-      notes: string | null;
-    }>(aiResponse);
 
     // Generate invoice number
     let invoiceNumber: string;
@@ -114,8 +173,8 @@ export async function POST(request: Request) {
         client_name: parsed.clientName || "Unknown Client",
         client_email: parsed.clientEmail || "",
         job_description: jobDescription,
-        line_items: parsed.lineItems || [],
-        total: parsed.total || 0,
+        line_items: Array.isArray(parsed.lineItems) ? parsed.lineItems : [],
+        total: Number(parsed.total) || 0,
         currency: parsed.currency || "USDC",
         due_date: safeDueDate(parsed.dueDate),
         status: "DRAFT",
