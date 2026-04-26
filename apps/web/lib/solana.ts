@@ -109,7 +109,7 @@ export async function checkRecentPayments(
 
     const signatures = await connection.getSignaturesForAddress(
       recipientPubkey,
-      { limit: 20 }
+      { limit: 50 }
     );
 
     const network = getNetwork();

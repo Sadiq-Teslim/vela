@@ -51,7 +51,6 @@ export default function PaymentPage() {
 
       if (data) {
         setInvoice(data as unknown as Invoice);
-        if (data.status === "PAID") setPaid(true);
 
         const { data: profile } = await supabase
           .from("profiles")
@@ -82,9 +81,7 @@ export default function PaymentPage() {
           const updated = payload.new as Partial<Invoice>;
           setInvoice((prev) => {
             if (!prev) return prev;
-            const merged = { ...prev, ...updated } as Invoice;
-            if (merged.status === "PAID") setPaid(true);
-            return merged;
+            return { ...prev, ...updated } as Invoice;
           });
         },
       )
@@ -113,29 +110,11 @@ export default function PaymentPage() {
         setInvoice((prev) =>
           prev ? ({ ...prev, ...(data as Partial<Invoice>) } as Invoice) : prev,
         );
-        if (data.status === "PAID") {
-          setPaid(true);
-          clearInterval(interval);
-        }
       }
     }, 10000);
 
     return () => clearInterval(interval);
   }, [invoiceId, paid]);
-
-  // Poll for payment status
-  useEffect(() => {
-    if (paid || !invoice) return;
-    const interval = setInterval(async () => {
-      const res = await fetch(`/api/payment-status/${invoiceId}`);
-      const data = await res.json();
-      if (data.paid) {
-        setPaid(true);
-        clearInterval(interval);
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [invoiceId, paid, invoice]);
 
   const solanaPayUrl = useMemo(() => {
     if (!wallet || !invoice) return "";
@@ -169,7 +148,9 @@ export default function PaymentPage() {
 
   function openPhantom() {
     if (!phantomDeepLink) {
-      setVerifyError("Phantom link is unavailable. Please try Open Wallet & Pay.");
+      setVerifyError(
+        "Phantom link is unavailable. Please try Open Wallet & Pay.",
+      );
       return;
     }
     setVerifyError("");
@@ -178,7 +159,9 @@ export default function PaymentPage() {
 
   function openSolanaWallet() {
     if (!solanaPayUrl) {
-      setVerifyError("Payment URL is unavailable. Please refresh and try again.");
+      setVerifyError(
+        "Payment URL is unavailable. Please refresh and try again.",
+      );
       return;
     }
     setVerifyError("");
@@ -187,19 +170,27 @@ export default function PaymentPage() {
 
   function launchWallet() {
     if (!solanaPayUrl && !phantomDeepLink) {
-      setVerifyError("Could not build payment link. Please refresh and try again.");
+      setVerifyError(
+        "Could not build payment link. Please refresh and try again.",
+      );
       return;
     }
 
     setVerifyError("");
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     const primary =
-      (isMobile ? phantomDeepLink : solanaPayUrl) || phantomDeepLink || solanaPayUrl;
+      (isMobile ? phantomDeepLink : solanaPayUrl) ||
+      phantomDeepLink ||
+      solanaPayUrl;
     const secondary =
-      (isMobile ? solanaPayUrl : phantomDeepLink) || solanaPayUrl || phantomDeepLink;
+      (isMobile ? solanaPayUrl : phantomDeepLink) ||
+      solanaPayUrl ||
+      phantomDeepLink;
 
     if (!primary) {
-      setVerifyError("Could not open wallet link. Please copy and paste the pay URL.");
+      setVerifyError(
+        "Could not open wallet link. Please copy and paste the pay URL.",
+      );
       return;
     }
 
@@ -213,7 +204,11 @@ export default function PaymentPage() {
 
     // If browser blocks the first scheme, try the alternate link quickly.
     const secondaryTimer = window.setTimeout(() => {
-      if (document.visibilityState === "visible" && secondary && secondary !== primary) {
+      if (
+        document.visibilityState === "visible" &&
+        secondary &&
+        secondary !== primary
+      ) {
         clickOpen(secondary);
       }
     }, 900);
@@ -222,7 +217,7 @@ export default function PaymentPage() {
     const hintTimer = window.setTimeout(() => {
       if (document.visibilityState === "visible") {
         setVerifyError(
-          "Wallet did not open automatically. Tap Copy Pay URL and paste it inside Phantom browser."
+          "Wallet did not open automatically. Tap Copy Pay URL and paste it inside Phantom browser.",
         );
       }
     }, 2200);
@@ -243,7 +238,7 @@ export default function PaymentPage() {
         body: JSON.stringify({}),
       });
       const data = await res.json();
-      if (data.verified || data.status === "PAID") {
+      if (data.verified) {
         setPaid(true);
       }
       setLastAutoCheck(new Date().toISOString());
@@ -256,9 +251,6 @@ export default function PaymentPage() {
   // Try launching wallet automatically once per session for this invoice.
   useEffect(() => {
     if (!solanaPayUrl || paid) return;
-    const key = `vela:wallet-launched:${invoiceId}`;
-    if (sessionStorage.getItem(key)) return;
-
     const t = setTimeout(() => {
       launchWallet();
       window.setTimeout(() => {

@@ -24,10 +24,6 @@ export async function POST(
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
-    if (invoice.status === "PAID") {
-      return NextResponse.json({ status: "already_paid", txHash: invoice.payment_tx_hash });
-    }
-
     // Get freelancer wallet
     const { data: profile } = await supabase
       .from("profiles")
@@ -96,7 +92,7 @@ export async function POST(
       });
     }
 
-    return NextResponse.json({ verified: false, status: invoice.status });
+    return NextResponse.json({ verified: false, status: "UNVERIFIED" });
   } catch (err) {
     console.error("Verify payment error:", err);
     return NextResponse.json(
