@@ -62,6 +62,60 @@ export default function PaymentPage() {
     fetchInvoice();
   }, [invoiceId]);
 
+  // Keep payment page in sync if the freelancer edits an unpaid invoice.
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`invoice-live:${invoiceId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "invoices",
+          filter: `id=eq.${invoiceId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Partial<Invoice>;
+          setInvoice((prev) => {
+            if (!prev) return prev;
+            const merged = { ...prev, ...updated } as Invoice;
+            if (merged.status === "PAID") setPaid(true);
+            return merged;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [invoiceId]);
+
+  // Fallback polling for environments where realtime is unavailable.
+  useEffect(() => {
+    if (paid) return;
+
+    const interval = setInterval(async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("invoices")
+        .select("id, number, client_name, client_email, total, currency, due_date, status, user_id, line_items")
+        .eq("id", invoiceId)
+        .single();
+
+      if (data) {
+        setInvoice((prev) => (prev ? ({ ...prev, ...(data as Partial<Invoice>) } as Invoice) : prev));
+        if (data.status === "PAID") {
+          setPaid(true);
+          clearInterval(interval);
+        }
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [invoiceId, paid]);
+
   // Poll for payment status
   useEffect(() => {
     if (paid || !invoice) return;

@@ -50,6 +50,7 @@ export default function InvoicePreviewPage() {
 
   async function handleSave() {
     if (!invoice) return;
+    if (invoice.status === "PAID") return;
     setSaving(true);
     const supabase = createClient();
 
@@ -116,6 +117,8 @@ export default function InvoicePreviewPage() {
     );
   }
 
+  const canEdit = invoice.status !== "PAID";
+
   return (
     <div className="py-8 px-4 md:px-8">
       <div className="max-w-2xl mx-auto">
@@ -128,11 +131,13 @@ export default function InvoicePreviewPage() {
               <Badge variant="ai-draft" />
             </div>
             <p className="text-vela-muted text-sm">
-              Review and edit before sending
+              {canEdit
+                ? "Review and edit. Changes sync to your payment link."
+                : "Invoice has been paid and is now locked."}
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {editing ? (
+            {canEdit && editing ? (
               <>
                 <Button variant="ghost" onClick={() => setEditing(false)}>
                   Cancel
@@ -141,9 +146,13 @@ export default function InvoicePreviewPage() {
                   Save Changes
                 </Button>
               </>
-            ) : (
+            ) : canEdit ? (
               <Button variant="secondary" onClick={() => setEditing(true)}>
                 Edit Fields
+              </Button>
+            ) : (
+              <Button variant="secondary" disabled>
+                Paid Invoice
               </Button>
             )}
           </div>

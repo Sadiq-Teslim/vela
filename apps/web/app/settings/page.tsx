@@ -160,7 +160,8 @@ export default function SettingsPage() {
               Raenest Wallet
             </h2>
             <p className="text-vela-muted text-xs mb-4">
-              Your Solana USDC wallet address from Raenest. Client payments land here.
+              Your Solana USDC wallet address from Raenest. Client payments land
+              here.
             </p>
             <Input
               label="Solana Wallet Address"
@@ -172,7 +173,9 @@ export default function SettingsPage() {
             {raenestWallet && (
               <div className="mt-3 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-vela-mint" />
-                <span className="text-vela-mint text-xs font-mono">Wallet configured</span>
+                <span className="text-vela-mint text-xs font-mono">
+                  Wallet configured
+                </span>
               </div>
             )}
           </Card>
@@ -324,7 +327,9 @@ export default function SettingsPage() {
                 >
                   <span
                     className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                      followUpEnabled ? "translate-x-[22px]" : "translate-x-[2px]"
+                      followUpEnabled
+                        ? "translate-x-[22px]"
+                        : "translate-x-[2px]"
                     }`}
                   />
                 </button>
@@ -343,7 +348,9 @@ export default function SettingsPage() {
                           min={1}
                           max={14}
                           value={reminderDaysBefore}
-                          onChange={(e) => setReminderDaysBefore(Number(e.target.value))}
+                          onChange={(e) =>
+                            setReminderDaysBefore(Number(e.target.value))
+                          }
                           className="w-16 bg-vela-panel border border-vela-border rounded-lg px-3 py-2 text-vela-primary font-mono text-sm text-center focus:outline-none focus:border-vela-cyan/50"
                         />
                         <span className="text-vela-muted text-xs">days</span>
@@ -359,17 +366,22 @@ export default function SettingsPage() {
                           min={1}
                           max={14}
                           value={overdueAfterDays}
-                          onChange={(e) => setOverdueAfterDays(Number(e.target.value))}
+                          onChange={(e) =>
+                            setOverdueAfterDays(Number(e.target.value))
+                          }
                           className="w-16 bg-vela-panel border border-vela-border rounded-lg px-3 py-2 text-vela-primary font-mono text-sm text-center focus:outline-none focus:border-vela-cyan/50"
                         />
-                        <span className="text-vela-muted text-xs">days after</span>
+                        <span className="text-vela-muted text-xs">
+                          days after
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-vela-panel rounded-lg p-3">
                     <p className="text-vela-muted text-xs font-mono leading-relaxed">
-                      Schedule: Reminder at T-{reminderDaysBefore}d → Due date → Overdue at T+{overdueAfterDays}d
+                      Schedule: Reminder at T-{reminderDaysBefore}d → Due date →
+                      Overdue at T+{overdueAfterDays}d
                     </p>
                   </div>
                 </>

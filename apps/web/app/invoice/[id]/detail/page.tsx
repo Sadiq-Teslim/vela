@@ -342,9 +342,11 @@ export default function InvoiceDetailPage() {
         </Card>
 
         <div className="flex gap-3 mt-6">
-          <Button variant="ghost" onClick={() => router.push(`/invoice/${id}/preview`)}>
-            Edit Invoice
-          </Button>
+          {invoice.status !== "PAID" && (
+            <Button variant="ghost" onClick={() => router.push(`/invoice/${id}/preview`)}>
+              Edit Unpaid Invoice
+            </Button>
+          )}
           <Button variant="ghost" onClick={() => router.push(`/invoice/${id}/contract`)}>
             View Contract
           </Button>
