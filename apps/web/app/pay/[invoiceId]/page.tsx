@@ -36,6 +36,7 @@ export default function PaymentPage() {
   const [txInput, setTxInput] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [autoVerifying, setAutoVerifying] = useState(false);
+  const [autoCheckEnabled, setAutoCheckEnabled] = useState(true);
   const [verifyError, setVerifyError] = useState("");
   const [lastAutoCheck, setLastAutoCheck] = useState<string | null>(null);
 
@@ -156,13 +157,80 @@ export default function PaymentPage() {
     return `https://phantom.app/ul/v1/transfer?recipient=${encodeURIComponent(wallet)}&amount=${encodeURIComponent(String(invoice.total))}&splToken=${encodeURIComponent(mint)}&label=${encodeURIComponent(`Vela-${invoice.number}`)}&message=${encodeURIComponent(`Payment for invoice ${invoice.number}`)}`;
   }, [wallet, invoice]);
 
-  function launchWallet() {
-    if (!solanaPayUrl) return;
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const target = isMobile && phantomDeepLink ? phantomDeepLink : solanaPayUrl;
+  function clickOpen(link: string) {
+    const a = document.createElement("a");
+    a.href = link;
+    a.target = "_self";
+    a.rel = "noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 
-    sessionStorage.setItem(`vela:wallet-launched:${invoiceId}`, "1");
-    window.location.href = target;
+  function openPhantom() {
+    if (!phantomDeepLink) {
+      setVerifyError("Phantom link is unavailable. Please try Open Wallet & Pay.");
+      return;
+    }
+    setVerifyError("");
+    clickOpen(phantomDeepLink);
+  }
+
+  function openSolanaWallet() {
+    if (!solanaPayUrl) {
+      setVerifyError("Payment URL is unavailable. Please refresh and try again.");
+      return;
+    }
+    setVerifyError("");
+    clickOpen(solanaPayUrl);
+  }
+
+  function launchWallet() {
+    if (!solanaPayUrl && !phantomDeepLink) {
+      setVerifyError("Could not build payment link. Please refresh and try again.");
+      return;
+    }
+
+    setVerifyError("");
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const primary =
+      (isMobile ? phantomDeepLink : solanaPayUrl) || phantomDeepLink || solanaPayUrl;
+    const secondary =
+      (isMobile ? solanaPayUrl : phantomDeepLink) || solanaPayUrl || phantomDeepLink;
+
+    if (!primary) {
+      setVerifyError("Could not open wallet link. Please copy and paste the pay URL.");
+      return;
+    }
+
+    try {
+      sessionStorage.setItem(`vela:wallet-launched:${invoiceId}`, "1");
+    } catch {
+      // Ignore storage errors in restricted browser modes.
+    }
+
+    clickOpen(primary);
+
+    // If browser blocks the first scheme, try the alternate link quickly.
+    const secondaryTimer = window.setTimeout(() => {
+      if (document.visibilityState === "visible" && secondary && secondary !== primary) {
+        clickOpen(secondary);
+      }
+    }, 900);
+
+    // Show guidance if both launch attempts were blocked.
+    const hintTimer = window.setTimeout(() => {
+      if (document.visibilityState === "visible") {
+        setVerifyError(
+          "Wallet did not open automatically. Tap Copy Pay URL and paste it inside Phantom browser."
+        );
+      }
+    }, 2200);
+
+    window.setTimeout(() => {
+      clearTimeout(secondaryTimer);
+      clearTimeout(hintTimer);
+    }, 2600);
   }
 
   async function autoDetectPayment() {
@@ -193,9 +261,9 @@ export default function PaymentPage() {
 
     const t = setTimeout(() => {
       launchWallet();
-      setTimeout(() => {
+      window.setTimeout(() => {
         autoDetectPayment();
-      }, 8000);
+      }, 3500);
     }, 700);
 
     return () => clearTimeout(t);
@@ -226,12 +294,12 @@ export default function PaymentPage() {
 
   // Background auto-check while payment is pending.
   useEffect(() => {
-    if (paid) return;
+    if (paid || !autoCheckEnabled) return;
     const interval = setInterval(() => {
       autoDetectPayment();
-    }, 12000);
+    }, 6000);
     return () => clearInterval(interval);
-  }, [paid, invoiceId, autoVerifying, verifying]);
+  }, [paid, invoiceId, autoVerifying, verifying, autoCheckEnabled]);
 
   function copyToClipboard(text: string, label: string) {
     navigator.clipboard.writeText(text);
@@ -512,6 +580,21 @@ export default function PaymentPage() {
 
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
+                    onClick={openPhantom}
+                    className="flex-1 border border-gray-200 hover:border-gray-300 text-gray-900 font-display font-bold px-4 py-2.5 rounded-lg text-sm transition"
+                  >
+                    Open Phantom
+                  </button>
+                  <button
+                    onClick={openSolanaWallet}
+                    className="flex-1 border border-gray-200 hover:border-gray-300 text-gray-900 font-display font-bold px-4 py-2.5 rounded-lg text-sm transition"
+                  >
+                    Open Wallet URI
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
                     onClick={launchWallet}
                     className="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-display font-bold px-4 py-2.5 rounded-lg text-sm transition shadow-sm"
                   >
@@ -541,6 +624,12 @@ export default function PaymentPage() {
                       ? `Auto-check active. Last check: ${new Date(lastAutoCheck).toLocaleTimeString()}`
                       : "Auto-check active. We will detect payment after wallet confirmation."}
                 </p>
+
+                {verifyError && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
+                    {verifyError}
+                  </div>
+                )}
 
                 {/* Manual verification */}
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-4">
