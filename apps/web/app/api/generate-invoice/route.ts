@@ -46,20 +46,24 @@ function buildFallbackInvoice(jobDescription: string): ParsedInvoice {
   const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
 
   const clientMatch = text.match(
-    /(?:client\s*[:\-]?|for\s+)([A-Za-z][A-Za-z\s'.-]{1,60})/i
+    /(?:client\s*[:\-]?|for\s+)([A-Za-z][A-Za-z\s'.-]{1,60})/i,
   );
   const rawClientName = clientMatch?.[1]?.trim() ?? "Client";
   const clientName = rawClientName.replace(/[.,;:!?]$/, "");
 
   const usdAmountMatch = text.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
   const genericAmountMatch = text.match(
-    /(?:amount|total|price|budget)\s*[:=\-]?\s*(\d+(?:\.\d{1,2})?)/i
+    /(?:amount|total|price|budget)\s*[:=\-]?\s*(\d+(?:\.\d{1,2})?)/i,
   );
   const firstNumberMatch = text.match(/\b(\d+(?:\.\d{1,2})?)\b/);
   const parsedAmount = Number(
-    usdAmountMatch?.[1] ?? genericAmountMatch?.[1] ?? firstNumberMatch?.[1] ?? 0
+    usdAmountMatch?.[1] ??
+      genericAmountMatch?.[1] ??
+      firstNumberMatch?.[1] ??
+      0,
   );
-  const amount = Number.isFinite(parsedAmount) && parsedAmount > 0 ? parsedAmount : 0;
+  const amount =
+    Number.isFinite(parsedAmount) && parsedAmount > 0 ? parsedAmount : 0;
 
   const currency: "USDC" | "USDT" = lower.includes("usdt") ? "USDT" : "USDC";
 
@@ -67,9 +71,15 @@ function buildFallbackInvoice(jobDescription: string): ParsedInvoice {
   const unit = daysMatch?.[2]?.toLowerCase();
   const rawDays = Number(daysMatch?.[1] ?? 14);
   const days = unit?.startsWith("week") ? rawDays * 7 : rawDays;
-  const dueDate = new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+  const dueDate = new Date(Date.now() + days * 86400000)
+    .toISOString()
+    .slice(0, 10);
 
-  const label = text.split(/[.!?\n]/)[0]?.trim().slice(0, 100) || "Freelance services";
+  const label =
+    text
+      .split(/[.!?\n]/)[0]
+      ?.trim()
+      .slice(0, 100) || "Freelance services";
 
   return {
     clientName,
@@ -105,14 +115,16 @@ export async function POST(request: Request) {
     if (!jobDescription || typeof jobDescription !== "string") {
       return NextResponse.json(
         { error: "Job description is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     let parsed: ParsedInvoice;
 
     if (!process.env.GROQ_API_KEY) {
-      console.error("GROQ_API_KEY is missing. Falling back to deterministic parser.");
+      console.error(
+        "GROQ_API_KEY is missing. Falling back to deterministic parser.",
+      );
       parsed = buildFallbackInvoice(jobDescription);
     } else {
       try {
@@ -146,7 +158,9 @@ export async function POST(request: Request) {
       invoiceNumber = seqData || `VLA-${Date.now().toString().slice(-4)}`;
     } catch {
       // Fallback if RPC function doesn't exist yet
-      const count = await supabase.from("invoices").select("id", { count: "exact", head: true });
+      const count = await supabase
+        .from("invoices")
+        .select("id", { count: "exact", head: true });
       const num = ((count.count || 0) + 1).toString().padStart(4, "0");
       invoiceNumber = `VLA-${num}`;
     }
@@ -160,7 +174,8 @@ export async function POST(request: Request) {
       // Reject dates too far in the past or future
       const now = Date.now();
       const oneYearMs = 365 * 86400000;
-      if (d.getTime() < now - oneYearMs || d.getTime() > now + oneYearMs) return fallback;
+      if (d.getTime() < now - oneYearMs || d.getTime() > now + oneYearMs)
+        return fallback;
       return d.toISOString();
     }
 
@@ -186,7 +201,7 @@ export async function POST(request: Request) {
       console.error("DB error:", dbError);
       return NextResponse.json(
         { error: "Failed to save invoice" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -195,7 +210,7 @@ export async function POST(request: Request) {
     console.error("Generate invoice error:", err);
     return NextResponse.json(
       { error: "Failed to generate invoice" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

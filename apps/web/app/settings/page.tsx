@@ -68,21 +68,38 @@ export default function SettingsPage() {
       return;
     }
 
+    const profilePayload = {
+      id: user.id,
+      email: user.email || "",
+      name,
+      business_name: businessName || null,
+      raenest_wallet: raenestWallet || null,
+      pdf_theme: pdfTheme,
+    };
+
     // Use upsert so this works even if the profile row doesn't exist
-    // (in case the auth trigger didn't fire)
-    const { error } = await supabase
+    // (in case the auth trigger didn't fire).
+    let { error } = await supabase
       .from("profiles")
-      .upsert(
-        {
-          id: user.id,
-          email: user.email || "",
-          name,
-          business_name: businessName || null,
-          raenest_wallet: raenestWallet || null,
-          pdf_theme: pdfTheme,
-        },
-        { onConflict: "id" }
-      );
+      .upsert(profilePayload, { onConflict: "id" });
+
+    // Temporary compatibility path for projects where the migration adding
+    // profiles.pdf_theme has not been applied yet.
+    if (
+      error?.code === "PGRST204" &&
+      error.message.toLowerCase().includes("pdf_theme")
+    ) {
+      const { pdf_theme: _ignored, ...payloadWithoutTheme } = profilePayload;
+      const retry = await supabase
+        .from("profiles")
+        .upsert(payloadWithoutTheme, { onConflict: "id" });
+      error = retry.error;
+      if (!error) {
+        toast("Settings saved (theme pending DB migration)", "success");
+        setSaving(false);
+        return;
+      }
+    }
 
     if (!error) {
       toast("Settings saved", "success");
