@@ -139,14 +139,20 @@ export default function PaymentPage() {
   const solanaPayUrl = useMemo(() => {
     if (!wallet || !invoice) return "";
     const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK || "devnet";
-    const mint = USDC_MINT[network] || USDC_MINT.devnet;
+    const networkKey: keyof typeof USDC_MINT =
+      network === "mainnet" ? "mainnet" : "devnet";
+    const mint = USDC_MINT[networkKey];
+    if (!mint) return "";
     return `solana:${wallet}?amount=${invoice.total}&spl-token=${mint}&label=Vela-${invoice.number}&message=Payment%20for%20invoice%20${invoice.number}`;
   }, [wallet, invoice]);
 
   const phantomDeepLink = useMemo(() => {
     if (!wallet || !invoice) return "";
     const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK || "devnet";
-    const mint = USDC_MINT[network] || USDC_MINT.devnet;
+    const networkKey: keyof typeof USDC_MINT =
+      network === "mainnet" ? "mainnet" : "devnet";
+    const mint = USDC_MINT[networkKey];
+    if (!mint) return "";
     return `https://phantom.app/ul/v1/transfer?recipient=${encodeURIComponent(wallet)}&amount=${encodeURIComponent(String(invoice.total))}&splToken=${encodeURIComponent(mint)}&label=${encodeURIComponent(`Vela-${invoice.number}`)}&message=${encodeURIComponent(`Payment for invoice ${invoice.number}`)}`;
   }, [wallet, invoice]);
 
