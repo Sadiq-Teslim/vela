@@ -34,12 +34,6 @@ export async function GET(
       .eq("id", invoice.user_id)
       .single();
 
-    const { data: contractRow } = await supabase
-      .from("contracts")
-      .select("content")
-      .eq("invoice_id", invoiceId)
-      .single();
-
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const paymentUrl = `${appUrl}/pay/${invoiceId}`;
 
@@ -78,7 +72,6 @@ export async function GET(
           business_name: profile?.business_name,
           email: profile?.email || "",
         }}
-        contract={contractRow?.content || null}
         paymentUrl={paymentUrl}
         qrDataUrl={qrDataUrl}
       />

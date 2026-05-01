@@ -31,7 +31,7 @@ export default function InvoicePreviewPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     async function fetchInvoice() {
@@ -69,19 +69,19 @@ export default function InvoicePreviewPage() {
     setSaving(false);
   }
 
-  async function handleGenerateContract() {
-    setGenerating(true);
+  async function handleSendInvoice() {
+    setSending(true);
     try {
-      const res = await fetch("/api/generate-contract", {
+      const res = await fetch("/api/send-invoice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ invoiceId: id }),
       });
       if (res.ok) {
-        router.push(`/invoice/${id}/contract`);
+        router.push("/dashboard");
       }
     } catch {
-      setGenerating(false);
+      setSending(false);
     }
   }
 
@@ -317,8 +317,8 @@ export default function InvoicePreviewPage() {
           <Button variant="secondary" onClick={() => router.push("/dashboard")}>
             Save as Draft
           </Button>
-          <Button onClick={handleGenerateContract} loading={generating}>
-            Generate Contract →
+          <Button onClick={handleSendInvoice} loading={sending}>
+            Send Invoice →
           </Button>
         </div>
       </div>

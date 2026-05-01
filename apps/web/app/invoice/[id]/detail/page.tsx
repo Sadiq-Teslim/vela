@@ -392,12 +392,6 @@ export default function InvoiceDetailPage() {
               Edit Unpaid Invoice
             </Button>
           )}
-          <Button
-            variant="ghost"
-            onClick={() => router.push(`/invoice/${id}/contract`)}
-          >
-            View Contract
-          </Button>
         </div>
       </div>
     </div>

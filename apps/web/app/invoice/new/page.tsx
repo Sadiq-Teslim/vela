@@ -57,7 +57,7 @@ export default function NewInvoicePage() {
         </div>
         <p className="text-vela-muted text-sm mb-8">
           Describe your job in plain English. AI will generate a professional
-          invoice and contract.
+          invoice.
         </p>
 
         <form onSubmit={handleGenerate}>
@@ -82,7 +82,7 @@ export default function NewInvoicePage() {
                   : "Include: client name, email, amount, deadline, scope"}
               </p>
               <Button type="submit" loading={loading} className="w-full sm:w-auto">
-                Generate Invoice & Contract
+                Generate Invoice
               </Button>
             </div>
           </div>

@@ -370,71 +370,6 @@ const buildStyles = (t: ThemeTokens) =>
     footerTag: { fontSize: 8, color: t.muted },
     footerPage: { fontSize: 8, color: t.muted, fontFamily: "Courier" },
 
-    /* Contract page */
-    contractIntro: {
-      fontSize: 10,
-      color: t.muted,
-      lineHeight: 1.5,
-      marginBottom: 22,
-    },
-    contractTitle: {
-      fontSize: 22,
-      fontFamily: "Helvetica-Bold",
-      color: t.primary,
-      marginBottom: 6,
-      letterSpacing: -0.5,
-    },
-    contractSubtitle: {
-      fontSize: 10,
-      color: t.muted,
-      marginBottom: 20,
-    },
-    sectionCard: {
-      backgroundColor: t.surface,
-      borderRadius: 6,
-      padding: 14,
-      marginBottom: 10,
-      borderLeftWidth: 3,
-      borderLeftColor: t.violet,
-    },
-    sectionLabel: {
-      fontSize: 7.5,
-      color: t.violet,
-      textTransform: "uppercase" as const,
-      letterSpacing: 1.3,
-      marginBottom: 5,
-      fontFamily: "Helvetica-Bold",
-    },
-    sectionText: {
-      fontSize: 10,
-      color: t.primary,
-      lineHeight: 1.5,
-    },
-    signatureArea: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: 36,
-      gap: 30,
-    },
-    signatureBlock: {
-      flex: 1,
-      paddingTop: 32,
-      borderTopWidth: 1,
-      borderTopColor: t.border,
-    },
-    signatureLabel: {
-      fontSize: 7.5,
-      color: t.muted,
-      textTransform: "uppercase" as const,
-      letterSpacing: 1.3,
-      marginBottom: 4,
-      fontFamily: "Helvetica-Bold",
-    },
-    signatureName: {
-      fontSize: 11,
-      color: t.primary,
-      fontFamily: "Helvetica-Bold",
-    },
   });
 
 /* ------------------------------------------------------------------ */
@@ -458,15 +393,7 @@ interface InvoicePDFProps {
     business_name?: string | null;
     email: string;
   };
-  contract?: {
-    scope_of_work: string;
-    payment_schedule: string;
-    revision_policy: string;
-    kill_fee: string;
-    ip_ownership: string;
-    governing_law: string;
-    confidentiality: string;
-  } | null;
+
   paymentUrl: string;
   /** Pre-generated QR code data URL for the Solana Pay link. */
   qrDataUrl?: string;
@@ -491,7 +418,6 @@ export function InvoicePDF({
   theme = "light",
   invoice,
   freelancer,
-  contract,
   paymentUrl,
   qrDataUrl,
 }: InvoicePDFProps) {
@@ -648,84 +574,7 @@ export function InvoicePDF({
         </View>
       </Page>
 
-      {/* ============================================================ */}
-      {/* Page 2 — Contract (optional)                                  */}
-      {/* ============================================================ */}
-      {contract && (
-        <Page size="A4" style={s.page}>
-          <View style={s.watermarkWrap} fixed>
-            <VelaWatermark color={t.watermark} />
-          </View>
 
-          <View style={s.header}>
-            <View style={s.brand}>
-              <VelaMark size={22} color={t.cyan} />
-              <Text style={s.logoText}>vela</Text>
-            </View>
-            <View style={{ alignItems: "flex-end" }}>
-              <Text style={s.invoiceLabel}>Agreement for</Text>
-              <Text style={s.invoiceNumber}>{invoice.number}</Text>
-            </View>
-          </View>
-
-          <Text style={s.contractTitle}>Freelance Service Agreement</Text>
-          <Text style={s.contractSubtitle}>
-            Between{" "}
-            <Text style={{ color: t.primary, fontFamily: "Helvetica-Bold" }}>
-              {freelancer.business_name || freelancer.name}
-            </Text>{" "}
-            (the Freelancer) and{" "}
-            <Text style={{ color: t.primary, fontFamily: "Helvetica-Bold" }}>
-              {invoice.client_name}
-            </Text>{" "}
-            (the Client), executed on {fmtDate(invoice.created_at)}.
-          </Text>
-
-          {[
-            { key: "scope_of_work", label: "Scope of Work" },
-            { key: "payment_schedule", label: "Payment Schedule" },
-            { key: "revision_policy", label: "Revision Policy" },
-            { key: "kill_fee", label: "Kill Fee" },
-            { key: "ip_ownership", label: "IP Ownership" },
-            { key: "governing_law", label: "Governing Law" },
-            { key: "confidentiality", label: "Confidentiality" },
-          ].map(({ key, label }) => (
-            <View key={key} style={s.sectionCard}>
-              <Text style={s.sectionLabel}>{label}</Text>
-              <Text style={s.sectionText}>
-                {contract[key as keyof typeof contract]}
-              </Text>
-            </View>
-          ))}
-
-          <View style={s.signatureArea}>
-            <View style={s.signatureBlock}>
-              <Text style={s.signatureLabel}>Freelancer</Text>
-              <Text style={s.signatureName}>
-                {freelancer.business_name || freelancer.name}
-              </Text>
-            </View>
-            <View style={s.signatureBlock}>
-              <Text style={s.signatureLabel}>Client</Text>
-              <Text style={s.signatureName}>{invoice.client_name}</Text>
-            </View>
-          </View>
-
-          <View style={s.footer} fixed>
-            <View style={s.footerBrand}>
-              <VelaMark size={10} color={t.cyan} />
-              <Text style={s.footerText}>vela</Text>
-              <Text style={s.footerTag}>— get paid. on-chain.</Text>
-            </View>
-            <Text
-              style={s.footerPage}
-              render={({ pageNumber, totalPages }) =>
-                `${pageNumber} / ${totalPages}`
-              }
-            />
-          </View>
-        </Page>
-      )}
     </Document>
   );
 }

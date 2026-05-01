@@ -42,7 +42,7 @@ const STEPS: { num: string; color: BoxAccent; title: string; body: string }[] = 
     num: "02",
     color: "cyan",
     title: "AI drafts everything",
-    body: "Invoice, contract, payment terms, follow-up schedule.",
+    body: "Invoice, payment terms, follow-up schedule.",
   },
   {
     num: "03",
@@ -66,12 +66,6 @@ const FEATURES: { icon: string; color: BoxAccent; title: string; body: string }[
     body: "Plain-English job descriptions become structured line items, due dates, and totals — instantly.",
   },
   {
-    icon: "§",
-    color: "violet",
-    title: "Smart Contracts",
-    body: "Scope, kill fee, revision policy, IP ownership, governing law — auto-generated and editable.",
-  },
-  {
     icon: "◈",
     color: "gold",
     title: "Solana Payment Links",
@@ -87,7 +81,7 @@ const FEATURES: { icon: string; color: BoxAccent; title: string; body: string }[
     icon: "◫",
     color: "cyan",
     title: "Beautiful PDF Export",
-    body: "Invoice + contract bundled into a Vela-branded PDF. Email to your client in one click.",
+    body: "Invoice bundled into a Vela-branded PDF. Email to your client in one click.",
   },
   {
     icon: "✓",
@@ -194,8 +188,8 @@ export default function Home() {
             transition={{ duration: 0.9, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="text-vela-muted font-body text-base md:text-xl max-w-xl mx-auto mb-10 leading-relaxed"
           >
-            Describe your job in plain English. Vela handles the invoice,
-            contract, and on-chain payment.
+            Describe your job in plain English. Vela handles the invoice
+            and on-chain payment.
           </motion.p>
 
           <motion.div
@@ -232,10 +226,7 @@ export default function Home() {
               <span className="w-1.5 h-1.5 rounded-full bg-vela-gold" />
               Settles to Raenest
             </span>
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-vela-violet" />
-              AI-drafted contracts
-            </span>
+
           </motion.div>
         </div>
       </section>
@@ -311,7 +302,7 @@ export default function Home() {
                     </div>
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
                       <span className="bg-vela-mint/10 text-vela-mint font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
-                        ✓ Contract bundled
+                        ✓ Ready to send
                       </span>
                       <span className="bg-vela-cyan/10 text-vela-cyan font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
                         Payment link ready

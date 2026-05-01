@@ -186,7 +186,7 @@ export default function SettingsPage() {
               Invoice PDF Theme
             </h2>
             <p className="text-vela-muted text-xs mb-4">
-              Choose how your generated invoices and contracts look.
+              Choose how your generated invoices look.
             </p>
 
             <div className="grid grid-cols-2 gap-3">

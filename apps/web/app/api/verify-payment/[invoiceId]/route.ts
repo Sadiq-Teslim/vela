@@ -4,7 +4,7 @@ import { verifyTransaction, checkRecentPayments } from "@/lib/solana";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ invoiceId: string }> }
+  { params }: { params: Promise<{ invoiceId: string }> },
 ) {
   try {
     const { invoiceId } = await params;
@@ -34,7 +34,7 @@ export async function POST(
     if (!profile?.raenest_wallet) {
       return NextResponse.json(
         { error: "Freelancer wallet not configured" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -47,13 +47,13 @@ export async function POST(
         txSignature,
         profile.raenest_wallet,
         invoice.total,
-        invoice.currency as "USDC" | "USDT"
+        invoice.currency as "USDC" | "USDT",
       );
       verified = result.verified;
       if (!verified) {
         return NextResponse.json(
           { verified: false, error: result.error },
-          { status: 400 }
+          { status: 400 },
         );
       }
     } else {
@@ -66,7 +66,7 @@ export async function POST(
         profile.raenest_wallet,
         invoice.total,
         invoice.currency as "USDC" | "USDT",
-        sentTimestamp
+        sentTimestamp,
       );
 
       verified = result.found;
@@ -95,9 +95,6 @@ export async function POST(
     return NextResponse.json({ verified: false, status: "UNVERIFIED" });
   } catch (err) {
     console.error("Verify payment error:", err);
-    return NextResponse.json(
-      { error: "Verification failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Verification failed" }, { status: 500 });
   }
 }

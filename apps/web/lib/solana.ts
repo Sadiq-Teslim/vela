@@ -22,7 +22,9 @@ function getConnection() {
 }
 
 function getNetwork(): "mainnet" | "devnet" {
-  return (process.env.NEXT_PUBLIC_SOLANA_NETWORK as "mainnet" | "devnet") || "devnet";
+  return (
+    (process.env.NEXT_PUBLIC_SOLANA_NETWORK as "mainnet" | "devnet") || "devnet"
+  );
 }
 
 export function getUsdcMint(): string {
@@ -36,7 +38,7 @@ export function generateSolanaPayUrl(
   recipientWallet: string,
   amount: number,
   invoiceNumber: string,
-  currency: "USDC" | "USDT" = "USDC"
+  currency: "USDC" | "USDT" = "USDC",
 ): string {
   const network = getNetwork();
   const mint = currency === "USDT" ? USDT_MINT[network] : USDC_MINT[network];
@@ -50,7 +52,7 @@ export async function verifyTransaction(
   txSignature: string,
   expectedRecipient: string,
   expectedAmount: number,
-  currency: "USDC" | "USDT" = "USDC"
+  currency: "USDC" | "USDT" = "USDC",
 ): Promise<{ verified: boolean; error?: string }> {
   try {
     const connection = getConnection();
@@ -75,7 +77,7 @@ export async function verifyTransaction(
       tx,
       expectedRecipient,
       expectedMint,
-      expectedAmount
+      expectedAmount,
     );
 
     if (!tokenTransfer) {
@@ -101,7 +103,7 @@ export async function checkRecentPayments(
   recipientWallet: string,
   expectedAmount: number,
   currency: "USDC" | "USDT" = "USDC",
-  afterTimestamp?: number
+  afterTimestamp?: number,
 ): Promise<{ found: boolean; txSignature?: string }> {
   try {
     const connection = getConnection();
@@ -109,7 +111,7 @@ export async function checkRecentPayments(
 
     const signatures = await connection.getSignaturesForAddress(
       recipientPubkey,
-      { limit: 50 }
+      { limit: 50 },
     );
 
     const network = getNetwork();
@@ -132,7 +134,7 @@ export async function checkRecentPayments(
         tx,
         recipientWallet,
         expectedMint,
-        expectedAmount
+        expectedAmount,
       );
 
       if (transfer) {
@@ -150,7 +152,7 @@ function findTokenTransfer(
   tx: ParsedTransactionWithMeta,
   recipient: string,
   mint: string,
-  amount: number
+  amount: number,
 ): boolean {
   if (!tx.meta) return false;
 
@@ -167,7 +169,7 @@ function findTokenTransfer(
     if (post.owner !== recipient) continue;
 
     const pre = preBalances.find(
-      (p) => p.accountIndex === post.accountIndex && p.mint === post.mint
+      (p) => p.accountIndex === post.accountIndex && p.mint === post.mint,
     );
 
     const preAmount = pre
